@@ -2,49 +2,54 @@ import 'dart:convert';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
-import 'package:mongo_dart/mongo_dart.dart' as mongo;
+import 'dart:convert';
+import 'package:mongo_dart/mongo_dart.dart';
+import 'Mongo_Conn.dart';
 
-class Rotas {
+class Endpoint {
   Handler get handler {
-    final router = Router();
+    final rout = Router();
 
-    var db = mongo.Db(
-      "mongodb+srv://DELCO:<Senhaforte2711>@cluster0.z3vmnhg.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
-    );
+    rout.get("/", (Request request) {
+      // ACESSANDO ALGUM QUERYPARAM
+      String? teste = request.url.queryParameters['nome'];
 
-    db.open();
-
-    // PARA CADA ROTA TEM QUE ENTRA COMO PARAM UM REQ E RETORNAR UM RESPONSE
-    //
-    router.get("/", (Request request) {
-      return Response(200, body: "primeira rota");
+      return Response(200, body: "primeira rota : $teste");
     });
 
-    // Aqui to apenas utilizando URL
-    // localhost:8080/ola/{ id que quiser}
-    router.get('/ola/<id>', (Request req, String id) {
-      return Response.ok("Ola mundo SR. ${id}");
-    });
+    rout.post("/second", (Request request) async {
+      Db db = await Mongoconn.database;
+      Map<String, dynamic>? teste2 = await returnjson(request);
+      String resposta = "";
+      var collection = db.collection('Usuarios');
 
-    // Capturando o queryparam
-    //localhost:8080/testandoqueryparam?nome={valor};
-    router.get("/testandoqueryparam", (Request req) {
-      final query = req.url.queryParameters['nome'];
+      try {
+        await collection.insertOne({
+          'nome': teste2?['nome'],
+          'email': teste2?['email'],
+          'senha': teste2?['senha'],
+        });
 
-      return Response.ok('deu certo :${query}');
-    });
+        resposta = "Valor inserido : ${teste2?['nome']}";
 
-    router.post("/postandoitem", (Request req) async {
-      var result = await req.readAsString();
-      Map json = jsonDecode(result);
+        return Response(200, body: "SEGUNDA ROTA :  $resposta");
+      } on MongoDartError catch (e) {
+        print("ERRO : $e");
+        resposta = "Deu ruim na inserção";
 
-      if (json['user'] == "admin" && json['senha'] == 2711) {
-        return Response.ok("Bem vindo ${json['user']}");
-      } else {
-        return Response.ok("Bem vindo usuario");
+        return Response(500, body: resposta);
       }
     });
 
-    return router;
+    return rout;
+  }
+
+  // Função para fazer a conversão do body em um dicionario!!
+  Future<Map<String, dynamic>?> returnjson(Request request) async {
+    //lendo todo o body do JSON em string no momento
+    final body = await request.readAsString();
+    //Aqui todo a strign jSon é convertida para um Map(String key :  dynamic valor )
+    return jsonDecode(body) as Map<String, dynamic>;
+
   }
 }
