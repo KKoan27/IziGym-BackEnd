@@ -50,23 +50,28 @@ class Endpoint {
     rout.get("/getExercicios", (Request request) async {
       Db db = await MongoConn.database;
       DbCollection collection = db.collection("Exercicios");
-       
+      var Lista = [];
 
       try{
 
     var exList  = await collection.find().toList();
-    for(int i = 0 ; i < exList.length; i++){
-
+    for(int i = 0 ; i < exList.length; i++)
+    {
       print(exList[i]);
     }
       
-      return Response.ok("A BUSCA DEU CERTO");
-    });
-      } on MongoDartError catch (e)  {
+    
+      return Response.ok(jsonEncode(exList), headers:  { 'Content-Type' : 'application/json'});
+      } on MongoDartError  catch (e)  {
 
-        return Response.badRequest(body: "A busca deu errado");
+        return Response.badRequest(body: "A busca deu errado \n INFO : $e", headers: {
+          'Content-Type': 'application/json'
+        });
 
       }   
+    });
+
+    return rout;
   }
 
   // Função para fazer a conversão do body em um dicionario!!
