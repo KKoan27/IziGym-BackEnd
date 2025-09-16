@@ -32,11 +32,9 @@ class Endpoint {
       );
 
       try {
-        await collection.insertOne({
-          'nome': User.nome,
-          'email': User.email,
-          'senha': User.senha,
-        });
+         await collection.insertOne(
+          User.toJson()
+        );
 
         resposta = "Valor inserido : ${User.nome}";
 
@@ -45,25 +43,30 @@ class Endpoint {
         print("ERRO : $e");
         resposta = "Deu ruim na inserção";
 
-        return Response(500, body: resposta);
+        return Response.badRequest(body: resposta);
       }
     });
 
     rout.get("/getExercicios", (Request request) async {
       Db db = await MongoConn.database;
       DbCollection collection = db.collection("Exercicios");
+       
 
-      var body = await returnjson(request);
+      try{
 
-     
-      db
+    var exList  = await collection.find().toList();
+    for(int i = 0 ; i < exList.length; i++){
 
-      await for (var exercicio in collection.find()) {}
-
-      return Response.ok("");
+      print(exList[i]);
+    }
+      
+      return Response.ok("A BUSCA DEU CERTO");
     });
+      } on MongoDartError catch (e)  {
 
-    return rout;
+        return Response.badRequest(body: "A busca deu errado");
+
+      }   
   }
 
   // Função para fazer a conversão do body em um dicionario!!

@@ -1,0 +1,11 @@
+{
+  "name": "Dart Server",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolder}/server",
+  "postCreateCommand": "bash .devcontainer/install-dart.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dart-code.dart-code"]
+    }
+  }
+}

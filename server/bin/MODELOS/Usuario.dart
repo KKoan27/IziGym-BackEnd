@@ -1,16 +1,17 @@
 import 'dart:io';
 
 class Usuario {
-  String _nome;
-  String _email;
-  String _senha;
+  String? nome;
+  String? email;
+  String? senha;
 
-  Usuario({required String nome, required String email, required String senha})
-    : _nome = nome,
-      _email = email,
-      _senha = senha;
+  Usuario({this.nome, this.email, this.senha});
 
-  String get nome => _nome;
-  String get email => _email;
-  String get senha => _senha;
+  Map<String, dynamic> toJson() {
+    return {
+      'nome': nome,
+      'email': email,
+      'senha': senha,
+    };
+  }
 }
