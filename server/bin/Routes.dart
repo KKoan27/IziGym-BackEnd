@@ -5,6 +5,8 @@ import 'package:shelf_router/shelf_router.dart';
 import 'dart:convert';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'Mongo_Conn.dart';
+import 'MODELOS/Exercicio.dart';
+import 'MODELOS/Usuario.dart';
 
 class Endpoint {
   Handler get handler {
@@ -17,20 +19,26 @@ class Endpoint {
       return Response(200, body: "primeira rota : $teste");
     });
 
+    // Rota para adicinoar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
     rout.post("/second", (Request request) async {
-      Db db = await Mongoconn.database;
-      Map<String, dynamic>? teste2 = await returnjson(request);
+      Db db = await MongoConn.database;
+      Map<String, dynamic>? body = await returnjson(request);
       String resposta = "";
       var collection = db.collection('Usuarios');
+      Usuario User = Usuario(
+        nome: body?['nome'],
+        email: body?['email'],
+        senha: body?['senha'],
+      );
 
       try {
         await collection.insertOne({
-          'nome': teste2?['nome'],
-          'email': teste2?['email'],
-          'senha': teste2?['senha'],
+          'nome': User.nome,
+          'email': User.email,
+          'senha': User.senha,
         });
 
-        resposta = "Valor inserido : ${teste2?['nome']}";
+        resposta = "Valor inserido : ${User.nome}";
 
         return Response(200, body: "SEGUNDA ROTA :  $resposta");
       } on MongoDartError catch (e) {
@@ -39,6 +47,20 @@ class Endpoint {
 
         return Response(500, body: resposta);
       }
+    });
+
+    rout.get("/getExercicios", (Request request) async {
+      Db db = await MongoConn.database;
+      DbCollection collection = db.collection("Exercicios");
+
+      var body = await returnjson(request);
+
+     
+      db
+
+      await for (var exercicio in collection.find()) {}
+
+      return Response.ok("");
     });
 
     return rout;

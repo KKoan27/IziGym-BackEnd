@@ -1,6 +1,6 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-class Mongoconn {
+class MongoConn {
   static Db? _db;
 
   static Future<Db> get database async {
