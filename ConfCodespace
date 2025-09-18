@@ -1,0 +1,20 @@
+# Atualiza a lista de pacotes
+sudo apt-get update
+
+# Instala dependências necessárias
+sudo apt-get install -y apt-transport-https
+
+# Pega a chave GPG do Google
+wget -qO- https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo gpg --dearmor -o /usr/share/keyrings/dart.gpg
+
+# Adiciona o repositório do Dart
+echo 'deb [signed-by=/usr/share/keyrings/dart.gpg arch=amd64] https://storage.googleapis.com/download.dartlang.org/linux/debian stable main' | sudo tee /etc/apt/sources.list.d/dart_stable.list
+
+# Atualiza a lista de pacotes novamente com o novo repositório
+sudo apt-get update
+
+# Instala o Dart SDK
+sudo apt-get install -y dart
+
+# Verifica a instalação
+dart --version
