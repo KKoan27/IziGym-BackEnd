@@ -20,12 +20,17 @@ class Endpoint {
     });
 
     // Rota para adicinoar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
-    rout.post("/second", (Request request) async {
+    rout.post("/user", (Request request) async {
       Db db = await MongoConn.database;
       Map<String, dynamic>? body = await returnjson(request);
       String resposta = "";
       var collection = db.collection('Usuarios');
-      Usuario User = Usuario(
+
+      String op = request.url.queryParameters['op']!;
+
+      switch (op) {
+        case "Register":
+          Usuario User = Usuario(
         nome: body?['nome'],
         email: body?['email'],
         senha: body?['senha'],
@@ -45,12 +50,44 @@ class Endpoint {
 
         return Response.badRequest(body: resposta);
       }
+          
+          case "AuthUser": 
+
+          try{
+
+          var auth = await collection.findOne({'email': body!['email']}) ;
+            print(auth);
+
+
+          if(auth?['email'] != body['email']){
+
+
+            return Response.unauthorized("Email incorreto");
+         
+
+          }else if(auth?['senha'] != body['senha']){
+            return Response.unauthorized("Senha incorreta");
+
+          }
+          
+          else{
+               return Response.ok("Acesso Autorizado!");
+          }
+
+          } catch (e){
+            print("ERRO: $e");
+
+          }
+          
+
+        default:
+      }
+    
     });
 
     rout.get("/getExercicios", (Request request) async {
       Db db = await MongoConn.database;
       DbCollection collection = db.collection("Exercicios");
-      var Lista = [];
 
       try{
 
