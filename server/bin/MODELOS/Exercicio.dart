@@ -28,6 +28,8 @@ class Exercicio {
   set nome(String? name) {
     if (name != null) {
       return;
+    } else {
+      throw Exception("Nome do exercicio está nulo");
     }
   }
 }
