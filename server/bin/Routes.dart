@@ -12,12 +12,18 @@ class Endpoint {
   Handler get handler {
     final rout = Router();
 
+    //   // ACESSANDO ALGUM QUERYPARAM
+    //   String? teste = request.url.queryParameters['nome'];
+
+    //   return Response(200, body: "primeira rota : $teste");
+    // });
+
     // Rota para adicinoar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
     rout.post("/user", (Request request) async {
       Db db = await MongoConn.database;
       Map<String, dynamic>? body = await returnjson(request);
       String resposta = "";
-      DbCollection collection = db.collection('Usuarios');
+      var collection = db.collection('Usuarios');
 
       String op = request.url.queryParameters['op']!;
 
