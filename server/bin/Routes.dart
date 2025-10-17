@@ -12,19 +12,12 @@ class Endpoint {
   Handler get handler {
     final rout = Router();
 
-    // rout.get("/exercicios", (Request request) {
-    //   // ACESSANDO ALGUM QUERYPARAM
-    //   String? teste = request.url.queryParameters['nome'];
-
-    //   return Response(200, body: "primeira rota : $teste");
-    // });
-
     // Rota para adicinoar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
     rout.post("/user", (Request request) async {
       Db db = await MongoConn.database;
       Map<String, dynamic>? body = await returnjson(request);
       String resposta = "";
-      var collection = db.collection('Usuarios');
+      DbCollection collection = db.collection('Usuarios');
 
       String op = request.url.queryParameters['op']!;
 
@@ -66,6 +59,30 @@ class Endpoint {
           }
 
         default:
+      }
+    });
+
+    rout.put("/user", (Request request) async {
+      Db db = await MongoConn.database;
+      var JsonBody = await returnjson(request);
+
+      Usuario user = new Usuario(
+        nome: JsonBody?['nome'],
+        email: JsonBody?['email'],
+        senha: JsonBody?['senha'],
+      );
+
+      DbCollection collection = db.collection('Usuarios');
+
+      var userold = await collection.findOne({'email': JsonBody?['email']});
+
+      if (userold != null) {
+        collection.updateOne({userold['id']}, user.toJson());
+        return Response.ok(
+          "Configurações executadas, o nome anterior alterado foi ${userold['nome']}",
+        );
+      } else {
+        throw Exception("Email não encontrado!");
       }
     });
 
