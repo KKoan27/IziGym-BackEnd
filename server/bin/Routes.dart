@@ -92,14 +92,21 @@ class Endpoint {
       }
     });
 
-    rout.get("/getExercicios", (Request request) async {
+    //Endpoint retornando todos os exercicios ou filtrando com base
+    rout.get("/getexercicios", (Request request) async {
       Db db = await MongoConn.database;
       DbCollection collection = db.collection("Exercicios");
 
       try {
-        var exList = await collection.find().toList();
-        for (int i = 0; i < exList.length; i++) {
-          print(exList[i]);
+        String? search = request.url.queryParameters['q'];
+        var exList;
+
+        if (search == null || search.isEmpty) {
+          exList = await collection.find().toList();
+        } else {
+          exList = await collection.find({
+            "nome": {"\$regex": search, "\$options": "i"},
+          }).toList();
         }
 
         return Response.ok(
