@@ -1,21 +1,18 @@
-import 'dart:io';
-
-import 'package:server/server.dart' as server;
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelfio;
 import 'Routes.dart';
+import 'Utilitys/custom_env.dart';
 
 void main() async {
   Endpoint rout = Endpoint();
-
-  String Address = 'localhost';
-  int port = 8080;
+  var address = await Customenv.get<String>(key: 'SERVER_ADDRESS');
+  var port = await Customenv.get<int>(key: 'SERVER_PORT');
 
   var handler = Pipeline()
       .addMiddleware(logRequests())
       .addHandler(rout.handler);
 
-  final serv = await shelfio.serve(handler, Address, port);
+  await shelfio.serve(handler, address, port);
 
-  print("serv start 8080");
+  print("serv start $address : $port ");
 }
