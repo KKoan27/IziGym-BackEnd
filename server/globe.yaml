@@ -5,6 +5,7 @@ start: build/server
 
 # Passos para construir sua aplicação
 build:
+  steps:
   # 1. Baixa as dependências do Dart
   - dart pub get
   # 2. Compila seu arquivo principal para um executável
