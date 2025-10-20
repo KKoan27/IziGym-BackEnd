@@ -8,7 +8,12 @@ class MongoConn {
       _db = await Db.create(
         "mongodb+srv://DELCO:Senhaforte2711@cluster0.z3vmnhg.mongodb.net/IZIGYM_DB",
       );
-      await _db!.open();
+
+      if (_db != null) {
+        await _db!.open();
+      } else {
+        throw MongoDartError("Não foi possivel conectar ao Mongo");
+      }
     }
     return _db!;
   }

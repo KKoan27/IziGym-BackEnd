@@ -6,6 +6,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'Mongo_Conn.dart';
 import 'MODELOS/Exercicio.dart';
 import 'MODELOS/Usuario.dart';
+import 'MODELOS/Treinos.dart';
 
 class Endpoint {
   Handler get handler {
@@ -64,6 +65,144 @@ class Endpoint {
           }
 
         default:
+      }
+    });
+
+    rout.post("/treino", (Request request) async {
+      Db db = await MongoConn.database;
+
+      // =======================================================================
+      // ETAPA 1: LER E VALIDAR A REQUISIÇÃO
+      // =======================================================================
+      var body = await returnjson(request);
+
+      // Validação de segurança: Verifique se os campos principais existem.
+      if (body == null ||
+          body['nome'] == null ||
+          body['nomeTreino'] == null ||
+          body['exercicios'] == null) {
+        return Response.badRequest(
+          body:
+              'Formato do JSON inválido ou campos obrigatórios faltando (nome, nomeTreino, exercicios).',
+        );
+      }
+
+      // Busca o usuário pelo nome fornecido no body
+      var user = await db.collection("Usuarios").findOne({
+        "nome": body['nome'],
+      });
+      if (user == null) {
+        return Response.notFound(
+          'Usuário com o nome "${body['nome']}" não foi encontrado.',
+        );
+      }
+
+      // Agora, lemos a lista de OBJETOS do body. Esta é a mudança principal.
+      final exerciciosRequestDoBody = body['exercicios'] as List<dynamic>;
+
+      if (exerciciosRequestDoBody.isEmpty) {
+        return Response.badRequest(
+          body: "A lista de exercicios não pode ser vazia.",
+        );
+      }
+
+      // =======================================================================
+      // ETAPA 2: VALIDAR SE OS EXERCÍCIOS EXISTEM NO BANCO DE DADOS
+      // =======================================================================
+
+      // Extrai apenas os NOMES da lista de objetos para usar na busca com $in
+      final nomesDosExercicios = exerciciosRequestDoBody
+          .map((ex) => ex['nome'] as String)
+          .toList();
+
+      // Busca no DB APENAS os exercícios que o usuário pediu
+      var exerciciosDB = await db.collection("Exercicios").find({
+        'nome': {'\$in': nomesDosExercicios},
+      }).toList();
+
+      // Sua lógica de validação perfeita: se a contagem não bate, algum exercício é inválido
+      if (exerciciosDB.length != nomesDosExercicios.length) {
+        Set<String> exerciciosEncontrados = exerciciosDB
+            .map((doc) => doc['nome'] as String)
+            .toSet();
+
+        List<String> nomesInvalidos = nomesDosExercicios
+            .where((nome) => !exerciciosEncontrados.contains(nome))
+            .toList();
+
+        return Response.badRequest(
+          body:
+              'Os seguintes exercicios são inválidos ou não existem: ${nomesInvalidos.join(', ')}',
+        );
+      } else {
+        // =======================================================================
+        // ETAPA 3: CONSTRUIR OS OBJETOS DART (SE A VALIDAÇÃO PASSOU)
+        // =======================================================================
+
+        // Otimização: Crie um mapa para acessar os dados do DB rapidamente pelo nome.
+        final mapaDeExerciciosDoDB = {
+          for (var doc in exerciciosDB) doc['nome']: doc,
+        };
+
+        // Agora, construa a lista de ItemTreino combinando os dados da requisição e do banco
+        List<ItemTreino> itensTreino = [];
+        for (var exReq in exerciciosRequestDoBody) {
+          final nomeExercicio = exReq['nome'] as String;
+          final dadosDoExercicioDoDB = mapaDeExerciciosDoDB[nomeExercicio]!;
+
+          // 1. Cria o objeto Exercicio com os dados completos do banco
+          final exercicioObj = Exercicio(
+            nome: dadosDoExercicioDoDB['nome'],
+            musculosAlvo: (dadosDoExercicioDoDB['musculosAlvo'] as List)
+                .cast<String>(),
+            descricao: dadosDoExercicioDoDB['descricao'],
+            execucao: dadosDoExercicioDoDB['execucao'],
+            // dicas: dadosDoExercicioDoDB['dicas'],
+          );
+
+          // 2. Cria o ItemTreino com o objeto Exercicio e os dados da requisição
+          itensTreino.add(
+            ItemTreino(
+              exercicio: exercicioObj,
+              series: exReq['series'] as int,
+              repeticoes: exReq['repeticoes'] as int,
+            ),
+          );
+        }
+
+        // 3. Constrói o objeto Treino final
+        Treinos treinoParaSalvar = Treinos(
+          nome: body['nomeTreino'],
+          userId: (user['_id'] as ObjectId)
+              // ignore: deprecated_member_use
+              .toHexString(), // Converte ObjectId para String para o modelo
+          itemTreino: itensTreino,
+        );
+
+        // =======================================================================
+        // ETAPA 4: PREPARAR E INSERIR NO BANCO DE DADOS
+        // =======================================================================
+
+        final documentoParaInserir = treinoParaSalvar.toJson();
+
+        // Importante: O schema espera um ObjectId, então convertemos a string de volta
+        documentoParaInserir['userId'] = user['_id'];
+
+        var result = await DbCollection(
+          db,
+          "Treinos",
+        ).insertOne(documentoParaInserir);
+
+        if (result.isSuccess) {
+          return Response.ok(
+            "Treino '${body['nomeTreino']}' inserido com sucesso!",
+          );
+        } else {
+          print(result.writeError); // Log do erro para depuração
+          return Response.internalServerError(
+            body: "Ocorreu um erro ao inserir o Treino no banco de dados.",
+          );
+        }
       }
     });
 
