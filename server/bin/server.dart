@@ -5,12 +5,16 @@ import 'Utilitys/custom_env.dart';
 
 void main() async {
   Endpoint rout = Endpoint();
-  var address = await Customenv.get<String>(key: 'SERVER_ADDRESS');
-  var port = await Customenv.get<int>(key: 'SERVER_PORT');
-
-  var handler = Pipeline()
+  
+var handler = Pipeline()
       .addMiddleware(logRequests())
       .addHandler(rout.handler);
+
+  final address = '0.0.0.0';
+  final platformPort = Platform.environment['PORT'];
+  final port = platformPort != null
+      ? int.parse(platformPort)
+      : await Customenv.get<int>(key: 'SERVER_PORT');
 
   await shelfio.serve(handler, address, port);
 
