@@ -38,7 +38,7 @@ class Exercicio {
   // toJson
   Map<String, dynamic> toJson() {
     return {
-      'nome': _nome, // <-- MUDANÇA 5: Chave corrigida
+      'nome': _nome,
       'musculosAlvo': _musculosAlvo,
       'descricao': _descricao,
       'execucao': _execucao,

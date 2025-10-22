@@ -1,19 +1,21 @@
+import 'package:mongo_dart/mongo_dart.dart';
+
 import 'Exercicio.dart';
 import 'Usuario.dart';
 
 class Treinos {
   String _nome;
-  String _userId;
+  ObjectId _userId;
   List<ItemTreino> itemTreino;
 
   Treinos({
     required String nome,
-    required String userId,
+    required ObjectId userId,
     required this.itemTreino,
   }) : _nome = nome,
        _userId = userId;
 
-  String get userId => _userId;
+  ObjectId get userId => _userId;
 
   Map<String, dynamic> toJson() {
     return {
@@ -40,7 +42,7 @@ class ItemTreino {
   Map<String, dynamic> toJson() {
     return {
       // Aqui também, aninhamos o JSON do exercício dentro do JSON do item de treino
-      // O '...' pega todas as chaves de exercicio.toJson()
+      // O '...' pega todas as chaves junto com os valores de exercicio.toJson()
       // (ex: 'nome', 'musculoAlvo') e as coloca aqui
       ...exercicio.toJson(),
       'series': series,

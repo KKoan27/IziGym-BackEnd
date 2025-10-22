@@ -97,8 +97,14 @@ class Endpoint {
         );
       }
 
-      // Agora, lemos a lista de OBJETOS do body. Esta é a mudança principal.
+      // Agora, lemos a LISTA de OBJETOS do body.
       final exerciciosRequestDoBody = body['exercicios'] as List<dynamic>;
+
+      // essa lista fica algo
+      // List[
+      //      map{'nome': "Agachamento", 'serie' : 4 , 'repeticoes': 10},
+      //      map{'nome': "Rosca com halteres", 'serie' : 5 , 'repeticoes': 15}
+      //     ]
 
       if (exerciciosRequestDoBody.isEmpty) {
         return Response.badRequest(
@@ -142,13 +148,29 @@ class Endpoint {
         // Otimização: Crie um mapa para acessar os dados do DB rapidamente pelo nome.
         final mapaDeExerciciosDoDB = {
           for (var doc in exerciciosDB) doc['nome']: doc,
+
+          //Aqui eu to trabalhando ainda com o objeto Exercicios, exemplo se eu fazer um print[mapaDeExerciciosDoDB['Puxada Frontal (Lat Pulldown)']]
+
+          // Vai sair:
+          //           // {
+          //   _id: ObjectId("635f..."),
+          //   nome: Puxada Frontal (Lat Pulldown),
+          //   musculoAlvo: Costas e Bíceps,
+          //   execucao: Sente-se na máquina...,
+          //   dificuldade: Iniciante
+          // }
+
+          // A estrutura então do mapaDeExerciciDoDB é Map{nome do exericico : objeto Exercicio}
         };
 
         // Agora, construa a lista de ItemTreino combinando os dados da requisição e do banco
         List<ItemTreino> itensTreino = [];
         for (var exReq in exerciciosRequestDoBody) {
+          // Lembrando que o exerciciosRequestDoBody não é o map de OBJETOS exericico (nomeExercico : Objeto Exercicio)❌
+          // Ele é uma LIST que contem MAPS que veio na requisição ({nomeExercicio : "nomedoexercicio", series : valoreminteiro, repeticoes : valoreminteiro})✔
           final nomeExercicio = exReq['nome'] as String;
-          final dadosDoExercicioDoDB = mapaDeExerciciosDoDB[nomeExercicio]!;
+          Map<String, dynamic> dadosDoExercicioDoDB =
+              mapaDeExerciciosDoDB[nomeExercicio]!;
 
           // 1. Cria o objeto Exercicio com os dados completos do banco
           final exercicioObj = Exercicio(
@@ -173,9 +195,8 @@ class Endpoint {
         // 3. Constrói o objeto Treino final
         Treinos treinoParaSalvar = Treinos(
           nome: body['nomeTreino'],
-          userId: (user['_id'] as ObjectId)
-              // ignore: deprecated_member_use
-              .toHexString(), // Converte ObjectId para String para o modelo
+          userId: user['_id'] as ObjectId,
+
           itemTreino: itensTreino,
         );
 
@@ -186,7 +207,6 @@ class Endpoint {
         final documentoParaInserir = treinoParaSalvar.toJson();
 
         // Importante: O schema espera um ObjectId, então convertemos a string de volta
-        documentoParaInserir['userId'] = user['_id'];
 
         var result = await DbCollection(
           db,
@@ -259,6 +279,7 @@ class Endpoint {
     });
 
     //Endpoint retornando todos os exercicios ou filtrando com base
+
     rout.get("/getexercicios", (Request request) async {
       Db db = await MongoConn.database;
       DbCollection collection = db.collection("Exercicios");
@@ -284,6 +305,43 @@ class Endpoint {
           body: "A busca deu errado \n INFO : $e",
           headers: {'Content-Type': 'application/json'},
         );
+      }
+    });
+
+    rout.get('/treino', (Request request) async {
+      Db db = await MongoConn.database;
+      String? user = request.url.queryParameters['user'];
+
+      if (user == null) {
+        return Response.badRequest(body: "Usuario não informado");
+      }
+
+      try {
+        Map<String, dynamic>? userBD = await db.collection('Usuarios').findOne({
+          'nome': user,
+        });
+
+        if (userBD == null) {
+          return Response.badRequest(
+            body: "Usuario não existe no banco de dados",
+          );
+        }
+
+        List<Map<String, dynamic>> treinosUser = await db
+            .collection('Treinos')
+            .find({'userId': userBD['_id']})
+            .toList();
+        if (treinosUser.isEmpty) {
+          print(treinosUser);
+          return Response.ok("nao existe treinos para este user $treinosUser");
+        } else {
+          return Response.ok(
+            jsonEncode(treinosUser),
+            headers: {'Content-Type': 'application/json'},
+          );
+        }
+      } catch (e) {
+        print("erro : $e");
       }
     });
 
