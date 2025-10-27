@@ -16,6 +16,7 @@ class Treinos {
        _userId = userId;
 
   ObjectId get userId => _userId;
+  String get nome => _nome;
 
   Map<String, dynamic> toJson() {
     return {
