@@ -3,12 +3,19 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelfio;
 import 'Routes.dart';
 import 'Utilitys/custom_env.dart';
+import 'package:shelf_cors_headers/shelf_cors_headers.dart' as cors;
 
 void main() async {
   Endpoint rout = Endpoint();
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Origin, Content-Type',
+  };
 
   var handler = Pipeline()
       .addMiddleware(logRequests())
+      .addMiddleware(cors.corsHeaders(headers: corsHeaders))
       .addHandler(rout.handler);
 
   // Lendo o ADDRESS dinamicamente
