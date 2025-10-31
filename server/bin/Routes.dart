@@ -14,6 +14,7 @@ import 'MODELOS/Treinos.dart';
 class Endpoint {
   Handler get handler {
     final rout = Router();
+    var resposta;
 
     //   // ACESSANDO ALGUM QUERYPARAM
     //   String? teste = request.url.queryParameters['nome'];
@@ -25,7 +26,6 @@ class Endpoint {
     rout.post("/user", (Request request) async {
       Db db = await MongoConn.database;
       Map<String, dynamic>? body = await returnjson(request);
-      String resposta = "";
       var collection = db.collection('Usuarios');
 
       String op = request.url.queryParameters['op']!;
@@ -42,33 +42,67 @@ class Endpoint {
           // ADicionar verificação se ja existe este email cadastrado!!
 
           try {
-            await collection.insertOne(user.toRegister());
-
-            resposta = "Valor inserido : ${user.nome}";
-
-            return Response(200, body: "SEGUNDA ROTA :  $resposta");
+            WriteResult responseDB = await collection.insertOne(
+              user.toRegister(),
+            );
+            if (responseDB.hasWriteErrors) {
+              throw Exception("Erro ao adicionar o usuario");
+            } else {
+              resposta = {'username': user.nome, 'email': user.email};
+              return Response.ok(
+                jsonEncode(resposta),
+                headers: {'Content-Type': 'application/json'},
+              );
+            }
           } on MongoDartError catch (e) {
             print("ERRO : $e");
-            resposta = "Deu ruim na inserção";
-
-            return Response.badRequest(body: resposta);
+            return Response.badRequest(
+              body: jsonEncode(e),
+              headers: {'Content-Type': 'application/json'},
+            );
           }
 
         case "authuser":
           try {
             var auth = await collection.findOne({"email": body?['email']});
-
             // Pendente: Criar objeto de usuario para que possa retornar os dados completos do mesmo
-
-            if (auth?['email'] != body?['email']) {
-              return Response.unauthorized("Email incorreto");
-            } else if (auth?['senha'] != body?['senha']) {
-              return Response.unauthorized("Senha incorreta");
+            if (auth == null) {
+              resposta = "Email não encontrado";
+              return Response.unauthorized(
+                jsonEncode(resposta),
+                headers: {'Content-Type': 'application/json'},
+              );
+            } else if (auth['senha'] != body?['senha']) {
+              resposta = "Senha incorreta";
+              return Response.unauthorized(
+                jsonEncode(resposta),
+                headers: {'Content-Type': 'application/json'},
+              );
             } else {
-              return Response.ok("Acesso Autorizado!");
+              Usuario user = Usuario(
+                id: auth!['_id'],
+                nome: auth?['nome'],
+                email: auth?['email'],
+                senha: auth?['senha'],
+              );
+
+              resposta = {
+                'id': user.id,
+                'username': user.nome,
+                'email': user.email,
+              };
+
+              return Response.ok(
+                jsonEncode(resposta),
+                headers: {'Content-Type': 'application/json'},
+              );
             }
           } catch (e, s) {
             print("ERRO: $e \n $s");
+            return Response.badRequest(
+              body: jsonEncode(e),
+              headers: {'Content-Type': 'application/json'},
+            );
           }
           db.close();
         default:
