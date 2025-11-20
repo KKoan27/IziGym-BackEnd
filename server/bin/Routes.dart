@@ -49,17 +49,11 @@ class Endpoint {
               throw Exception("Erro ao adicionar o usuario");
             } else {
               resposta = {'username': user.nome, 'email': user.email};
-              return Response.ok(
-                jsonEncode(resposta),
-                headers: {'Content-Type': 'application/json'},
-              );
+              return Response.ok(jsonEncode(resposta));
             }
           } on MongoDartError catch (e) {
             print("ERRO : $e");
-            return Response.badRequest(
-              body: jsonEncode(e),
-              headers: {'Content-Type': 'application/json'},
-            );
+            return Response.badRequest(body: jsonEncode(e));
           }
 
         case "authuser":
@@ -68,16 +62,10 @@ class Endpoint {
             // Pendente: Criar objeto de usuario para que possa retornar os dados completos do mesmo
             if (auth == null) {
               resposta = "Email não encontrado";
-              return Response.unauthorized(
-                jsonEncode(resposta),
-                headers: {'Content-Type': 'application/json'},
-              );
+              return Response.unauthorized(jsonEncode(resposta));
             } else if (auth['senha'] != body?['senha']) {
               resposta = "Senha incorreta";
-              return Response.unauthorized(
-                jsonEncode(resposta),
-                headers: {'Content-Type': 'application/json'},
-              );
+              return Response.unauthorized(jsonEncode(resposta));
             } else {
               Usuario user = Usuario(
                 id: auth!['_id'],
@@ -92,10 +80,7 @@ class Endpoint {
                 'email': user.email,
               };
 
-              return Response.ok(
-                jsonEncode(resposta),
-                headers: {'Content-Type': 'application/json'},
-              );
+              return Response.ok(jsonEncode(resposta));
             }
           } catch (e, s) {
             print("ERRO: $e \n $s");
