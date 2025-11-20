@@ -176,6 +176,10 @@ class Endpoint {
         List<String> nomesInvalidos = nomesDosExercicios
             .where((nome) => !exerciciosEncontrados.contains(nome))
             .toList();
+        return Response.badRequest(
+          body:
+              'Os seguintes exercicios não foram encontrados :$nomesInvalidos',
+        );
       } else {
         // =======================================================================
         // ETAPA 3: CONSTRUIR OS OBJETOS DART (SE A VALIDAÇÃO PASSOU)
