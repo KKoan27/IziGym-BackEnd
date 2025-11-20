@@ -30,14 +30,14 @@ class Treinos {
 }
 
 class ItemTreino {
-  int series;
+  int intervalo;
   int repeticoes;
   Exercicio exercicio;
 
   ItemTreino({
     required this.exercicio,
     required this.repeticoes,
-    required this.series,
+    required this.intervalo,
   });
 
   Map<String, dynamic> toJson() {
@@ -46,7 +46,7 @@ class ItemTreino {
       // O '...' pega todas as chaves junto com os valores de exercicio.toJson()
       // (ex: 'nome', 'musculoAlvo') e as coloca aqui
       ...exercicio.toJson(),
-      'series': series,
+      'intervalo': intervalo,
       'repeticoes': repeticoes,
     };
   }

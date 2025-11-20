@@ -161,6 +161,10 @@ class Endpoint {
         List<String> nomesInvalidos = nomesDosExercicios
             .where((nome) => !exerciciosEncontrados.contains(nome))
             .toList();
+        return Response.badRequest(
+          body:
+              'Os seguintes exercicios não foram encontrados :$nomesInvalidos',
+        );
       } else {
         // =======================================================================
         // ETAPA 3: CONSTRUIR OS OBJETOS DART (SE A VALIDAÇÃO PASSOU)
@@ -189,7 +193,7 @@ class Endpoint {
         for (var exReq in exerciciosRequestDoBody) {
           // Lembrando que o exerciciosRequestDoBody não é o map de OBJETOS exericico (nomeExercico : Objeto Exercicio)❌
           // Ele é uma LIST que contem MAPS que veio na requisição
-          //({nomeExercicio : "nomedoexercicio", series : valoreminteiro, repeticoes : valoreminteiro})✔
+          //({nomeExercicio : "nomedoexercicio", intervalo : valoreminteiro, repeticoes : valoreminteiro})✔
           final nomeExercicio = exReq['nome'] as String;
           Map<String, dynamic> dadosDoExercicioDoDB =
               mapaDeExerciciosDoDB[nomeExercicio]!;
@@ -208,7 +212,7 @@ class Endpoint {
           itensTreino.add(
             ItemTreino(
               exercicio: exercicioObj,
-              series: exReq['series'] as int,
+              intervalo: exReq['intervalo'] as int,
               repeticoes: exReq['repeticoes'] as int,
             ),
           );
@@ -380,7 +384,7 @@ class Endpoint {
                   ItemTreino(
                     exercicio: exercicioCompleto, // Objeto correto associado!
                     repeticoes: itemExercicioRequisicao['repeticoes'] as int,
-                    series: itemExercicioRequisicao['series'] as int,
+                    intervalo: itemExercicioRequisicao['intervalo'] as int,
                   ),
                 );
               }
