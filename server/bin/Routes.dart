@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:collection';
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -24,6 +22,7 @@ class Endpoint {
 
     // Rota para adicinoar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
     rout.post("/user", (Request request) async {
+      Usuario user;
       Db db = await MongoConn.database;
       Map<String, dynamic>? body = await returnjson(request);
       var collection = db.collection('Usuarios');
@@ -33,11 +32,27 @@ class Endpoint {
       switch (op) {
         // Caso seja registro vai cair  neste case, a ideia é receber os dados e construir o objeto usuario(user)
         case "register":
-          Usuario user = Usuario(
-            nome: body?['nome'],
-            email: body?['email'],
-            senha: body?['senha'],
-          );
+          if (body == null) {
+            return Response.badRequest(body: "Corpo está nulo bobão!");
+          }
+
+          if (body.containsKey('altura') && body.containsKey('peso')) {
+            user = Usuario(
+              nome: body['nome'],
+              email: body['email'],
+              senha: body['senha'],
+              peso: body['peso'],
+              altura: body['altura'],
+            );
+          } else {
+            user = Usuario(
+              nome: body['nome'],
+              email: body['email'],
+              senha: body['senha'],
+              peso: 0,
+              altura: 0,
+            );
+          }
 
           // ADicionar verificação se ja existe este email cadastrado!!
 
@@ -49,7 +64,9 @@ class Endpoint {
               throw Exception("Erro ao adicionar o usuario");
             } else {
               resposta = {'username': user.nome, 'email': user.email};
-              return Response.ok(jsonEncode(resposta));
+              return Response.ok(
+                jsonEncode(resposta),
+              ); // Retornando a response aqui
             }
           } on MongoDartError catch (e) {
             print("ERRO : $e");
@@ -68,16 +85,22 @@ class Endpoint {
               return Response.unauthorized(jsonEncode(resposta));
             } else {
               Usuario user = Usuario(
-                id: auth!['_id'],
-                nome: auth?['nome'],
-                email: auth?['email'],
-                senha: auth?['senha'],
+                id: auth['_id'],
+                nome: auth['nome'],
+                email: auth['email'],
+                senha: auth['senha'],
+                altura: auth['altura'],
+                peso: auth['peso'],
               );
 
+              // Por algum motivo o metodo toJson da model não ta funfanndo, retorna :
+              // Converting object to an encodable object failed: _Set len:1
               resposta = {
                 'id': user.id,
                 'username': user.nome,
                 'email': user.email,
+                'altura': user.altura,
+                'peso': user.peso,
               };
 
               return Response.ok(jsonEncode(resposta));
@@ -263,10 +286,10 @@ class Endpoint {
         var jsonBody = await returnjson(request);
 
         if (jsonBody != null) {
-          user = Usuario(
-            nome: jsonBody['nome'],
+          user = Usuario.setting(
             email: jsonBody['email'],
-            senha: jsonBody['senha'],
+            altura: jsonBody['altura'],
+            peso: jsonBody['peso'],
           );
         } else {
           throw Exception("Body da requisição está nula ");
@@ -276,16 +299,14 @@ class Endpoint {
 
         var userold = await collection.findOne({"email": user.email});
         if (userold != null) {
-          print(user.toJson());
+          print(user.toSetting());
           var result = await collection.updateOne(
             {'_id': userold['_id']},
-            {'\$set': user.toJson()},
+            {'\$set': user.toSetting()},
           );
 
           if (!result.hasWriteErrors) {
-            return Response.ok(
-              "Configurações executadas, o nome anterior alterado foi ${userold['nome']}",
-            );
+            return Response.ok("Configurações executadas");
           } else {
             print("Esse print fala que deu erro no mongoDart");
           }
