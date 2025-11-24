@@ -37,6 +37,7 @@ void main() async {
   print("🚀 Servidor iniciado em http://${server.address.host}:${server.port}");
 }
 
+// Nome da função do nosso middleware
 Middleware standardResponseMiddleware() {
   // A estrutura padrão de um middleware: recebe um handler e retorna outro.
   return (Handler innerHandler) {
@@ -76,12 +77,14 @@ Middleware standardResponseMiddleware() {
         // e apenas sobrescrever o body e o Content-Type.
         return originalResponse.change(
           body: jsonEncode(standardPayload), // Codifica o novo mapa para JSON
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            ...originalResponse.headers,
+            'Content-Type': 'application/json',
+          },
         );
-      } catch (e, s) {
-        print(s);
+      } catch (e) {
         // Se ocorrer um erro em algum handler interno, podemos padronizar a resposta de erro também.
-        print('Erro capturado no middleware de resposta padrão: $e');
+        print('Erro capturado no middleware de resposta pad rão: $e');
         final errorPayload = {
           'methodRequest': request.method,
           'statusCode': 500,
