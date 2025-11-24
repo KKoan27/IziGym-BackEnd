@@ -18,7 +18,7 @@ void main() async {
   var handler = Pipeline()
       .addMiddleware(logRequests())
       .addMiddleware(cors.corsHeaders(headers: corsHeaders))
-      .addMiddleware(standardResponseMiddleware())
+      .addMiddleware(standardResponseMiddleware(corsHeaders))
       .addHandler(rout.handler);
 
   // Lendo o ADDRESS dinamicamente
@@ -38,53 +38,47 @@ void main() async {
 }
 
 // Nome da função do nosso middleware
-Middleware standardResponseMiddleware() {
+Middleware standardResponseMiddleware(Map<String, String> corsHeaders) {
   // A estrutura padrão de um middleware: recebe um handler e retorna outro.
   return (Handler innerHandler) {
     // Este é o novo handler que será executado.
     // Usamos 'async' porque vamos 'await' a resposta do handler interno.
     return (Request request) async {
-      try {
-        // 1. Deixa a requisição passar e AGUARDA a resposta original.
-        final originalResponse = await innerHandler(request);
+      // evita quebrar o pré-flight do CORS
+      if (request.method == 'OPTIONS') {
+        return Response.ok('', headers: {...corsHeaders});
+      }
 
-        // 2. Lê o corpo da resposta original como uma string.
+      try {
+        final originalResponse = await innerHandler(request);
         final originalBodyString = await originalResponse.readAsString();
 
-        // 3. Tenta decodificar o corpo original. Se não for JSON, usa a string como está.
         dynamic responseBody;
+
         if (originalBodyString.isNotEmpty) {
           try {
             responseBody = jsonDecode(originalBodyString);
-          } catch (e) {
-            // Se a decodificação falhar, o corpo não era JSON. Usamos a string bruta.
+          } catch (_) {
             responseBody = originalBodyString;
           }
         } else {
-          // Se o corpo original for vazio, representamos como um objeto vazio.
           responseBody = {};
         }
 
-        // 4. Monta a nova estrutura (payload) da resposta.
         final standardPayload = {
           'methodRequest': request.method,
           'statusCode': originalResponse.statusCode,
           'response': responseBody,
         };
 
-        // 5. Cria e retorna uma NOVA resposta padronizada.
-        // Usamos '.change()' para manter os headers originais, se houver,
-        // e apenas sobrescrever o body e o Content-Type.
         return originalResponse.change(
-          body: jsonEncode(standardPayload), // Codifica o novo mapa para JSON
+          body: jsonEncode(standardPayload),
           headers: {
             ...originalResponse.headers,
             'Content-Type': 'application/json',
           },
         );
       } catch (e) {
-        // Se ocorrer um erro em algum handler interno, podemos padronizar a resposta de erro também.
-        print('Erro capturado no middleware de resposta pad rão: $e');
         final errorPayload = {
           'methodRequest': request.method,
           'statusCode': 500,
@@ -93,6 +87,7 @@ Middleware standardResponseMiddleware() {
             'details': e.toString(),
           },
         };
+
         return Response.internalServerError(
           body: jsonEncode(errorPayload),
           headers: {'Content-Type': 'application/json'},
