@@ -34,7 +34,14 @@ class Usuario {
   }
 
   Map<String, dynamic> toRegister() {
-    return {'nome': nome, 'email': email, 'senha': senha};
+    return {
+      'nome': nome,
+      'email': email,
+      'senha': senha,
+      'peso': (peso ?? 0.0).toDouble(), // Garante explicitamente que é double
+      'altura': (altura ?? 0.0)
+          .toDouble(), // Garante explicitamente que é double
+    };
   }
 
   Map<String, dynamic> toSetting() {

@@ -49,19 +49,23 @@ class Endpoint {
               nome: body['nome'],
               email: body['email'],
               senha: body['senha'],
-              peso: 0,
-              altura: 0,
+              peso: 0.0,
+              altura: 0.0,
             );
           }
 
           // ADicionar verificação se ja existe este email cadastrado!!
 
           try {
-            WriteResult responseDB = await collection.insertOne(
-              user.toRegister(),
-            );
+            var userrequest = user.toRegister();
+            userrequest.remove('_id');
+            WriteResult responseDB = await collection.insertOne(userrequest);
             if (responseDB.hasWriteErrors) {
-              throw Exception("Erro ao adicionar o usuario");
+              print(responseDB.document);
+
+              throw Exception(
+                "Erro ao adicionar o usuario, ${responseDB.writeError?.errmsg ?? responseDB.errmsg}",
+              );
             } else {
               resposta = {'username': user.nome, 'email': user.email};
               return Response.ok(
