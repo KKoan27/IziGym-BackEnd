@@ -4,10 +4,10 @@ import 'dart:convert';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:mongo_dart/mongo_dart.dart';
-import 'Mongo_Conn.dart';
-import 'MODELOS/Exercicio.dart';
-import 'MODELOS/Usuario.dart';
-import 'MODELOS/Treinos.dart';
+import '../lib/MODELOS/Mongo_Conn.dart';
+import '../lib/MODELOS/Exercicio.dart';
+import '../lib/MODELOS/Usuario.dart';
+import '../lib/MODELOS/Treinos.dart';
 
 class Endpoint {
   Handler get handler {
@@ -36,23 +36,30 @@ class Endpoint {
             return Response.badRequest(body: "Corpo está nulo bobão!");
           }
 
-          if (body.containsKey('altura') && body.containsKey('peso')) {
-            user = Usuario(
-              nome: body['nome'],
-              email: body['email'],
-              senha: body['senha'],
-              peso: body['peso'],
-              altura: body['altura'],
-            );
-          } else {
-            user = Usuario(
-              nome: body['nome'],
-              email: body['email'],
-              senha: body['senha'],
-              peso: 0.0,
-              altura: 0.0,
-            );
+          Map<String, dynamic>? userExists = await collection.findOne({
+            r'$or': [
+              {'email': body['email']},
+              {'nome': body['nome']},
+            ],
+          });
+          if (userExists != null) {
+            String campoDuplicado = '';
+
+            if (userExists['email'] == body['email']) {
+              campoDuplicado = 'O e-mail';
+            } else if (userExists['nome'] == body['nome']) {
+              campoDuplicado = 'O nome de usuário';
+            }
+
+            return Response(409, body: "$campoDuplicado já existe");
           }
+          user = Usuario(
+            nome: body['nome'],
+            email: body['email'],
+            senha: body['senha'],
+            peso: 0.0,
+            altura: 0.0,
+          );
 
           // ADicionar verificação se ja existe este email cadastrado!!
 
@@ -80,7 +87,6 @@ class Endpoint {
         case "authuser":
           try {
             var auth = await collection.findOne({"email": body?['email']});
-            // Pendente: Criar objeto de usuario para que possa retornar os dados completos do mesmo
             if (auth == null) {
               resposta = "Email não encontrado";
               return Response.unauthorized(jsonEncode(resposta));
@@ -116,8 +122,10 @@ class Endpoint {
               headers: {'Content-Type': 'application/json'},
             );
           }
-          db.close();
         default:
+          return Response.badRequest(
+            body: (jsonEncode({'erro': "param OP invalido"})),
+          );
       }
     });
 
