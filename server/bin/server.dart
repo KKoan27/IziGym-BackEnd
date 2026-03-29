@@ -1,13 +1,36 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:mongo_dart/mongo_dart.dart';
+import 'package:server/Controllers/ExercicioController.dart';
+import 'package:server/Controllers/TreinosController.dart';
+import 'package:server/data/DAO/ExercicioDAO.dart';
+import 'package:server/data/DAO/TreinoDAO.dart';
+import 'package:server/data/DAO/UserDAO.dart';
+import 'package:server/data/Mongo_Conn.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelfio;
-import 'Routes.dart';
-import '../lib/Utilitys/custom_env.dart';
+import 'package:server/Router.dart';
+import 'package:server/Utilitys/custom_env.dart';
 import 'package:shelf_cors_headers/shelf_cors_headers.dart' as cors;
+import 'package:server/Controllers/UserController.dart';
 
 void main() async {
-  Endpoint rout = Endpoint();
+  Db db = await MongoConn.database;
+  //DAO's
+  TreinoDAO treinoDAO = TreinoDAO(db);
+  ExercicioDAO exercicioDAO = ExercicioDAO(db);
+  UserDAO userDAO = UserDAO(db);
+
+  //Controllers
+  Treinoscontroller treinoscontroller = Treinoscontroller();
+  Exerciciocontroller exerciciocontroller = Exerciciocontroller();
+  UserController userController = UserController(userDAO);
+
+  Endpoint rout = Endpoint(
+    exercicioctrl: exerciciocontroller,
+    userctrl: userController,
+    treinoctrl: treinoscontroller,
+  );
 
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -36,6 +59,8 @@ void main() async {
 
   print("🚀 Servidor iniciado em http://${server.address.host}:${server.port}");
 }
+
+// Organizar essas Middleware
 
 // Nome da função do nosso middleware
 Middleware standardResponseMiddleware(Map<String, String> corsHeaders) {

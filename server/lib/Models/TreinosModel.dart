@@ -1,7 +1,7 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-import 'Exercicio.dart';
-import 'Usuario.dart';
+import 'ExercicioModel.dart';
+import 'UserModel.dart';
 
 class Treinos {
   String _nome;

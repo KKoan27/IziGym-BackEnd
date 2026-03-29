@@ -1,33 +1,39 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:server/Controllers/UserController.dart';
+import 'package:server/Controllers/TreinosController.dart';
+import 'package:server/Controllers/ExercicioController.dart';
+import 'package:server/data/DAO/ExercicioDAO.dart';
+import 'package:server/data/DAO/UserDAO.dart';
+import 'package:server/data/DAO/TreinoDAO.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 import 'package:mongo_dart/mongo_dart.dart';
-import '../lib/MODELOS/Mongo_Conn.dart';
-import '../lib/MODELOS/Exercicio.dart';
-import '../lib/MODELOS/Usuario.dart';
-import '../lib/MODELOS/Treinos.dart';
+import 'package:server/data/Mongo_Conn.dart';
+import 'Models/ExercicioModel.dart';
+import 'Models/UserModel.dart';
+import 'Models/TreinosModel.dart';
 
 class Endpoint {
+  Endpoint({
+    required Exerciciocontroller exercicioctrl,
+    required UserController userctrl,
+    required Treinoscontroller treinoctrl,
+  });
+
   Handler get handler {
     final rout = Router();
     var resposta;
 
-    //   // ACESSANDO ALGUM QUERYPARAM
-    //   String? teste = request.url.queryParameters['nome'];
-
-    //   return Response(200, body: "primeira rota : $teste");
-    // });
-
-    // Rota para adicinoar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
+    // Rota para adicionar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
     rout.post("/user", (Request request) async {
-      Usuario user;
-      Db db = await MongoConn.database;
-      Map<String, dynamic>? body = await returnjson(request);
-      var collection = db.collection('Usuarios');
+      Usuario user; //Controller
+      Db db = await MongoConn.database; //
+      Map<String, dynamic>? body = await returnjson(request); //Utilitys
+      DbCollection collection = db.collection('Usuarios'); // DAO
 
-      String op = request.url.queryParameters['op']!;
+      String op =
+          request.url.queryParameters['op']!; //Chamada do Controller no Router
 
       switch (op) {
         // Caso seja registro vai cair  neste case, a ideia é receber os dados e construir o objeto usuario(user)
@@ -61,11 +67,8 @@ class Endpoint {
             altura: 0.0,
           );
 
-          // ADicionar verificação se ja existe este email cadastrado!!
-
           try {
             var userrequest = user.toRegister();
-            userrequest.remove('_id');
             WriteResult responseDB = await collection.insertOne(userrequest);
             if (responseDB.hasWriteErrors) {
               print(responseDB.document);
@@ -319,8 +322,6 @@ class Endpoint {
 
           if (!result.hasWriteErrors) {
             return Response.ok("Configurações executadas");
-          } else {
-            print("Esse print fala que deu erro no mongoDart");
           }
         } else {
           throw Exception("Email não encontrado!");
