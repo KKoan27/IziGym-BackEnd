@@ -1,1 +1,4 @@
-class Treinoscontroller {}
+class Treinoscontroller {
+
+  
+}

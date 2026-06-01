@@ -15,15 +15,20 @@ import 'Models/UserModel.dart';
 import 'Models/TreinosModel.dart';
 
 class Endpoint {
+  final Exerciciocontroller exercicioctrl;
+  final UserController userctrl;
+  final Treinoscontroller treinoctrl;
   Endpoint({
-    required Exerciciocontroller exercicioctrl,
-    required UserController userctrl,
-    required Treinoscontroller treinoctrl,
+    required this.exercicioctrl,
+    required this.userctrl,
+    required this.treinoctrl,
   });
 
   Handler get handler {
     final rout = Router();
     var resposta;
+
+    rout.post("/user/register", userctrl.Register);
 
     // Rota para adicionar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
     rout.post("/user", (Request request) async {

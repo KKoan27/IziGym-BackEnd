@@ -19,13 +19,6 @@ class UserDAO {
 
     Map<String, dynamic> query = {r'$or': orFilters};
 
-    // query fica assim:
-    //     {
-    //   "$or": [
-    //     {"email": "vini@academia.com"},
-    //     {"nome": "vinicius_arquiteto"}
-    //   ]
-    // }
     if (user.id != null) {
       query['_id'] = {r'$ne': user.id};
 
