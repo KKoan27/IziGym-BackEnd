@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:server/Controllers/ExercicioController.dart';
 import 'package:server/Controllers/TreinosController.dart';
+import 'package:server/Services/UserService.dart';
 import 'package:server/data/DAO/ExercicioDAO.dart';
 import 'package:server/data/DAO/TreinoDAO.dart';
 import 'package:server/data/DAO/UserDAO.dart';
@@ -17,14 +18,22 @@ import 'package:server/Controllers/UserController.dart';
 void main() async {
   Db db = await MongoConn.database;
   //DAO's
-  TreinoDAO treinoDAO = TreinoDAO(db);
-  ExercicioDAO exercicioDAO = ExercicioDAO(db);
-  UserDAO userDAO = UserDAO(db);
+  TreinoDAO treinodao  = TreinoDAO(db);
+  ExercicioDAO exerciciodao = ExercicioDAO(db);
+  UserDAO userdao = UserDAO(db);
+
+
+  //Services
+  UserService userservice = UserService(userdao);
+  // ExercicioService exercicio = exercicioservice(exerciciodao)
+  // TreinoService treino = treinoservice(treinodao)
+
+
 
   //Controllers
   Treinoscontroller treinoscontroller = Treinoscontroller();
   Exerciciocontroller exerciciocontroller = Exerciciocontroller();
-  UserController userController = UserController(userDAO);
+  UserController userController = UserController(userservice);
 
   Endpoint rout = Endpoint(
     exercicioctrl: exerciciocontroller,

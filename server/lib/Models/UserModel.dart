@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:mongo_dart/mongo_dart.dart';
 
-class Usuario {
+class UserModel {
   ObjectId? id;
   String? nome;
   String? email;
@@ -10,7 +10,7 @@ class Usuario {
   double? altura;
   double? peso;
 
-  Usuario({
+  UserModel({
     this.id,
     required this.nome,
     required this.email,
@@ -19,8 +19,10 @@ class Usuario {
     this.peso,
   });
 
+  UserModel.register({this.id, this.email, this.nome} );
+
   // To pensando o que fazer com isso ainda
-  Usuario.setting({this.email, this.altura, this.peso});
+  UserModel.setting({this.email, this.altura, this.peso});
 
   Map<String, dynamic> toJson() {
     return {

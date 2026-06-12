@@ -1,44 +1,68 @@
-import 'dart:ffi';
+import 'dart:convert';
 
-import 'package:mongo_dart/mongo_dart.dart';
 import 'package:server/Models/UserModel.dart';
-import 'package:server/data/DAO/UserDAO.dart';
+import 'package:server/Services/UserService.dart';
 import 'package:shelf/shelf.dart';
 import 'package:server/Utilitys/ReturnJson.dart';
-
+import 'package:server/Utilitys/Exceptions.dart';
 class UserController {
-  UserDAO userDAO;
+  UserService userservice;
+  
 
-  UserController(this.userDAO);
+  UserController(this.userservice);
 
-  //Testando um construtor diferente porque sim
-
+// Arquitetura do Handler - Entra um request no parametro e retorna uma Response (promessa)
   Future<Response> Register(Request request) async {
     try {
       Map<String, dynamic>? body = await returnjson(request);
 
+//Verificação do body da requisição
       if (body == null) {
         return Response.badRequest(body: "Corpo de requisição nulo");
       }
-      Usuario usuario = Usuario(
+      UserModel usuario = UserModel(
         nome: body['nome'],
         email: body['email'],
         senha: body['senha'],
+        peso: 0.0,
+        altura: 0.0,
       );
 
-      Usuario? userExists = await userDAO.findUser(usuario);
-
-      if (userExists != null)
-        // ignore: curly_braces_in_flow_control_structures
-        return Response.badRequest(body: "Usuario já existe");
-
-      WriteResult resultInsert = await userDAO.InsertUser(usuario);
-      if (resultInsert.hasWriteErrors)
-        throw Exception(" ${resultInsert.errmsg}");
-    } catch (e) {
+// Mandando para o service
+      UserModel UserResponse = await userservice.Register(usuario);
+      print(jsonEncode(UserResponse));
+      return Response.ok(jsonEncode(UserResponse));
+ 
+// Exceções
+    
+    } 
+    on  UserAlreadyExistsException  catch( e){
+      return Response(409, body: jsonEncode({'error' : e.message}));
+    
+    } 
+  
+    catch (e) {
       return Response.badRequest(body: "Erro ao cadastrar o usuario : $e");
     }
+   
 
-    return Response.ok("Usuario cadastrado");
+  }
+
+  Future<Response> Auth(Request request) async {
+    try {
+
+      Map<String,dynamic>? body = await returnjson( request);
+
+      if(body == null) throw MissingParametersException();
+
+      UserModel user = UserModel(email: body['name'], senha: body['password'] );
+      
+
+    } catch{
+
+    }
   }
 }
+
+
+

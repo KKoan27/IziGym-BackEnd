@@ -29,10 +29,11 @@ class Endpoint {
     var resposta;
 
     rout.post("/user/register", userctrl.Register);
+    rout.post("/user/auth", userctrl.Auth);
 
     // Rota para adicionar DOC no Banco de dados, ATENÇÃO PARA OS CAMPOS (nome, email, senha) todos são string
     rout.post("/user", (Request request) async {
-      Usuario user; //Controller
+      UserModel user; //Controller
       Db db = await MongoConn.database; //
       Map<String, dynamic>? body = await returnjson(request); //Utilitys
       DbCollection collection = db.collection('Usuarios'); // DAO
@@ -64,7 +65,7 @@ class Endpoint {
 
             return Response(409, body: "$campoDuplicado já existe");
           }
-          user = Usuario(
+          user = UserModel(
             nome: body['nome'],
             email: body['email'],
             senha: body['senha'],
@@ -102,7 +103,7 @@ class Endpoint {
               resposta = "Senha incorreta";
               return Response.unauthorized(jsonEncode(resposta));
             } else {
-              Usuario user = Usuario(
+              UserModel user = UserModel(
                 id: auth['_id'],
                 nome: auth['nome'],
                 email: auth['email'],
@@ -301,12 +302,12 @@ class Endpoint {
 
     rout.put("/user", (Request request) async {
       Db db = await MongoConn.database;
-      Usuario user;
+      UserModel user;
       try {
         var jsonBody = await returnjson(request);
 
         if (jsonBody != null) {
-          user = Usuario.setting(
+          user = UserModel.setting(
             email: jsonBody['email'],
             altura: jsonBody['altura'],
             peso: jsonBody['peso'],

@@ -6,11 +6,11 @@ class UserDAO {
   Db db;
   UserDAO(this.db);
 
-  Future<WriteResult> InsertUser(Usuario usuario) async {
+  Future<WriteResult> InsertUser(UserModel usuario) async {
     return await db.collection('Usuarios').insertOne(usuario.toRegister());
   }
 
-  Future<Usuario?> findUser(Usuario user) async {
+  Future<UserModel?> findUser(UserModel user) async {
     // Criamos um mapa para o $or (Email ou Nome)
     Map<String, dynamic> orFilters = {'email': user.email, 'nome': user.nome};
 
@@ -37,7 +37,7 @@ class UserDAO {
     return result == null ? null : user;
   }
 
-  Future<bool> AuthUser(Usuario usuario) async {
+  Future<bool> AuthUser(UserModel usuario) async {
     var auth = await db.collection('Usuarios').findOne({
       {"email": usuario.email, "senha": usuario.senha},
     });
@@ -45,7 +45,7 @@ class UserDAO {
     return true;
   }
 
-  Future<bool> UpdateUser(Usuario usuario, Usuario updateuser) async {
+  Future<bool> UpdateUser(UserModel usuario, UserModel updateuser) async {
     try {
       var result = await db
           .collection('Usuarios')
