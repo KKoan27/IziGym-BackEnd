@@ -12,7 +12,7 @@ class UserDAO {
 
   Future<UserModel?> findUser(UserModel user) async {
     // Criamos um mapa para o $or (Email ou Nome)
-    Map<String, dynamic> orFilters = {'email': user.email, 'nome': user.nome};
+    List<Map<String, dynamic>> orFilters = [{'email': user.email},{'nome': user.nome}];
 
     // A MÁGICA DA EDIÇÃO:
     // Se o objeto já tem um ID, queremos buscar conflitos com OUTROS usuários

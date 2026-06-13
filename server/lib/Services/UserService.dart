@@ -18,10 +18,20 @@ import 'package:server/Utilitys/Exceptions.dart';
        
       if (resultInsert.hasWriteErrors) throw Exception(" ${resultInsert.errmsg}");
       
-      return UserModel.register(
+      return UserModel.registerReponse(
         id: resultInsert.id,
         nome: usuario.nome,
         email: usuario.email);
+    }
+
+    Auth(UserModel usuario) async{
+
+
+      if (await userdao.findUser(usuario) == null )  throw UserNotFoundException();
+    
+
+      return await userdao.AuthUser(usuario);
+  
     }
 
   

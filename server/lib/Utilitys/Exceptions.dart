@@ -16,7 +16,7 @@ class InvalidPasswordException implements Exception{
   final String message;
   InvalidPasswordException([this.message = 'Senha inválida']);
 } 
-s
+
 class MissingParametersException implements Exception{
     final String message;
 MissingParametersException([this.message = 'Parâmetros faltando']);

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:server/Models/UserModel.dart';
 import 'package:server/Services/UserService.dart';
@@ -30,8 +31,7 @@ class UserController {
 
 // Mandando para o service
       UserModel UserResponse = await userservice.Register(usuario);
-      print(jsonEncode(UserResponse));
-      return Response.ok(jsonEncode(UserResponse));
+      return Response.ok(jsonEncode(UserResponse.toRegister()));
  
 // Exceções
     
@@ -41,8 +41,10 @@ class UserController {
     
     } 
   
-    catch (e) {
-      return Response.badRequest(body: "Erro ao cadastrar o usuario : $e");
+    catch (e, s) {
+
+      print("Erro: $e \n $s");
+        return Response.badRequest(body: "Erro ao cadastrar o usuario : $e ");
     }
    
 
@@ -55,10 +57,22 @@ class UserController {
 
       if(body == null) throw MissingParametersException();
 
-      UserModel user = UserModel(email: body['name'], senha: body['password'] );
+      UserModel user = UserModel.auth(email: body['name'], senha: body['password'] );
       
+      if(user.email == null || user.senha == null) throw MissingParametersException();
 
-    } catch{
+      if(!await userservice.Auth(user)){
+       throw InvalidPasswordException();
+
+      }
+
+      return Response.ok({'message' : 'Autenticado com sucesso', 'response' : jsonEncode(user)});
+
+    } on InvalidPasswordException catch(e){
+       return Response.unauthorized( jsonEncode({'invalidPassoword' : e.message}) );
+    } 
+    on Exception catch(e){
+      return Response.badRequest(body:  jsonEncode({'error' : e}));
 
     }
   }
