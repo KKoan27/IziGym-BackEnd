@@ -24,14 +24,17 @@ import 'package:server/Utilitys/Exceptions.dart';
         email: usuario.email);
     }
 
-    Auth(UserModel usuario) async{
+    Future<UserModel>  Auth(UserModel userRequest) async{
 
 
-      if (await userdao.findUser(usuario) == null )  throw UserNotFoundException();
-    
+      UserModel? userResponse = await userdao.findUser(userRequest)  ;
 
-      return await userdao.AuthUser(usuario);
-  
+      if(userResponse == null) throw UserNotFoundException();
+
+      if (userResponse.senha != userRequest.senha) throw InvalidPasswordException();
+
+      return userResponse;
+
     }
 
   

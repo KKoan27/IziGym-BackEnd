@@ -112,7 +112,9 @@ Middleware standardResponseMiddleware(Map<String, String> corsHeaders) {
             'Content-Type': 'application/json',
           },
         );
-      } catch (e) {
+      } catch (e, s) {
+
+        print('erro: $e \n\n $s');
         final errorPayload = {
           'methodRequest': request.method,
           'statusCode': 500,
