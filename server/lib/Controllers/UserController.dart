@@ -1,6 +1,5 @@
+// ignore: file_names
 import 'dart:convert';
-import 'dart:developer';
-
 import 'package:server/Models/UserModel.dart';
 import 'package:server/Services/UserService.dart';
 import 'package:shelf/shelf.dart';
@@ -31,6 +30,8 @@ class UserController {
 
       // Mandando para o service
       UserModel UserResponse = await userservice.Register(usuario);
+
+      // PENDENTE: Inserir um message "Usuário cadastrado com sucesso"
       return Response.ok(jsonEncode(UserResponse.toRegister()));
 
       // Exceções
@@ -53,21 +54,23 @@ class UserController {
         senha: body['password'],
       );
 
-      if (user.email == null || user.senha == null)
-        throw MissingParametersException();
+      UserModel userRequest = UserModel.auth(email: body['email'], senha: body['senha'] );
+      
+      if(userRequest.email == null || userRequest.senha == null) throw MissingParametersException();
 
-      if (!await userservice.Auth(user)) {
-        throw InvalidPasswordException();
-      }
+      UserModel userResponse = await userservice.Auth(userRequest);
 
-      return Response.ok({
-        'message': 'Autenticado com sucesso',
-        'response': jsonEncode(user),
-      });
-    } on InvalidPasswordException catch (e) {
-      return Response.unauthorized(jsonEncode({'invalidPassoword': e.message}));
-    } on Exception catch (e) {
-      return Response.badRequest(body: jsonEncode({'error': e}));
+
+      return Response.ok(jsonEncode({'message' : 'Autenticado com sucesso', 'response' : userResponse.toJson()}));
+
+    } on InvalidPasswordException catch(e){
+       return Response.unauthorized( jsonEncode({'invalidPassoword' : e.message}) );
+    } 
+    on Exception catch(e,s){
+
+      print(s);
+      return Response.badRequest(body:  jsonEncode({'error' : e}));
+
     }
   }
 }

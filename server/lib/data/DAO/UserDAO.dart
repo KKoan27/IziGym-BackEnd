@@ -11,8 +11,9 @@ class UserDAO {
   }
 
   Future<UserModel?> findUser(UserModel user) async {
-    // Criamos um mapa para o $or (Email ou Nome)
-    List<Map<String, dynamic>> orFilters = [{'email': user.email},{'nome': user.nome}];
+
+    try {
+       List<Map<String, dynamic>> orFilters = [{'email': user.email},{'nome': user.nome}];
 
     // A MÁGICA DA EDIÇÃO:
     // Se o objeto já tem um ID, queremos buscar conflitos com OUTROS usuários
@@ -34,16 +35,33 @@ class UserDAO {
     }
 
     final result = await db.collection('Usuarios').findOne(query);
-    return result == null ? null : user;
+    return result == null ? null : UserModel(id: result['_id'],email: result['email'], nome: result['nome'], senha: result['senha'], altura: result['altura'], peso: result['peso'] );
+    } on MongoDartError catch (e) {
+      
+      throw e;
+    }
+    
+     catch (e, s) {
+        print("$e, $s");
+        throw e;
+
+    }
+    // Criamos um mapa para o $or (Email ou Nome)
+   
   }
 
-  Future<bool> AuthUser(UserModel usuario) async {
-    var auth = await db.collection('Usuarios').findOne({
-      {"email": usuario.email, "senha": usuario.senha},
-    });
-    if (auth == null) return false;
-    return true;
-  }
+// TALVEZ NEM PRECISE
+
+  // Future<UserModel?> findByEmail(UserModel usuario) async {
+  //   var user = await db.collection('Usuarios').findOne(
+  //     {"email": usuario.email},
+  // );
+
+  // if(user == null){
+  //   return null;
+  // }
+  //   return UserModel(email: user['email'], nome: user['nome'], senha: user['senha']);
+  // }
 
   Future<bool> UpdateUser(UserModel usuario, UserModel updateuser) async {
     try {
