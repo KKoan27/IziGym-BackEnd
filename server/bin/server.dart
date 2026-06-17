@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:server/Controllers/ExercicioController.dart';
 import 'package:server/Controllers/TreinosController.dart';
+import 'package:server/Services/TreinoService.dart';
 import 'package:server/Services/UserService.dart';
 import 'package:server/data/DAO/ExercicioDAO.dart';
 import 'package:server/data/DAO/TreinoDAO.dart';
@@ -30,12 +31,12 @@ void main() async {
   UserService userservice = UserService(userdao);
   ExercicioService exercicioservice = ExercicioService(exerciciodao);
 
-  // TreinoService treino = treinoservice(treinodao)
+  TreinoService treinoservice = TreinoService(treinodao);
 
 
 
   //Controllers
-  Treinoscontroller treinoscontroller = Treinoscontroller();
+  Treinoscontroller treinoscontroller = Treinoscontroller(treinoservice);
   Exerciciocontroller exerciciocontroller = Exerciciocontroller(exercicioservice);
   UserController userController = UserController(userservice);
 
