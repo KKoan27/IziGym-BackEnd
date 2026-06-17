@@ -14,6 +14,9 @@ import 'package:server/Router.dart';
 import 'package:server/Utilitys/custom_env.dart';
 import 'package:shelf_cors_headers/shelf_cors_headers.dart' as cors;
 import 'package:server/Controllers/UserController.dart';
+import 'package:server/Controllers/ExercicioController.dart';
+import 'package:server/Services/ExercicioService.dart';
+import 'package:server/data/DAO/ExercicioDAO.dart';
 
 void main() async {
   Db db = await MongoConn.database;
@@ -25,14 +28,15 @@ void main() async {
 
   //Services
   UserService userservice = UserService(userdao);
-  // ExercicioService exercicio = exercicioservice(exerciciodao)
+  ExercicioService exercicioservice = ExercicioService(exerciciodao);
+
   // TreinoService treino = treinoservice(treinodao)
 
 
 
   //Controllers
   Treinoscontroller treinoscontroller = Treinoscontroller();
-  Exerciciocontroller exerciciocontroller = Exerciciocontroller();
+  Exerciciocontroller exerciciocontroller = Exerciciocontroller(exercicioservice);
   UserController userController = UserController(userservice);
 
   Endpoint rout = Endpoint(

@@ -1,13 +1,13 @@
 import 'dart:io';
 
-class Exercicio {
+class ExercicioModel {
   String _nome;
   final List<String> _musculosAlvo;
   final String _descricao;
   String _execucao;
   String? _dicas;
 
-  Exercicio({
+  ExercicioModel({
     required String nome,
     required List<String> musculosAlvo,
     required String descricao,

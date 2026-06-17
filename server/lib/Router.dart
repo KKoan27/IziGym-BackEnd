@@ -137,7 +137,7 @@ class Endpoint {
               mapaDeExerciciosDoDB[nomeExercicio]!;
 
           // 1. Cria o objeto Exercicio com os dados completos do banco
-          final exercicioObj = Exercicio(
+          final exercicioObj = ExercicioModel(
             nome: dadosDoExercicioDoDB['nome'],
             musculosAlvo: (dadosDoExercicioDoDB['musculosAlvo'] as List)
                 .cast<String>(),
@@ -290,14 +290,14 @@ class Endpoint {
               body: 'Os exercicios não existem no Banco de dados',
             );
           } else {
-            final mapaDeExercicios = <String, Exercicio>{};
+            final mapaDeExercicios = <String, ExercicioModel>{};
             for (final docExercicio in resultExercicios) {
               final nome = docExercicio['nome'] as String;
               final musculosStringList = List<String>.from(
                 docExercicio['musculosAlvo'] as List,
               );
 
-              mapaDeExercicios[nome] = Exercicio(
+              mapaDeExercicios[nome] = ExercicioModel(
                 nome: nome,
                 musculosAlvo: musculosStringList,
                 descricao: docExercicio['descricao'],
@@ -357,15 +357,9 @@ class Endpoint {
 
       try {
         String? search = request.url.queryParameters['q'];
-        var exList;
+        List<Map<String, dynamic>> exList;
 
-        if (search == null || search.isEmpty) {
-          exList = await collection.find().toList();
-        } else {
-          exList = await collection.find({
-            "nome": {"\$regex": search, "\$options": "i"},
-          }).toList();
-        }
+      
 
         return Response.ok(
           jsonEncode(exList),

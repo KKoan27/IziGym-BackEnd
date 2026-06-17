@@ -32,7 +32,7 @@ class Treinos {
 class ItemTreino {
   int intervalo;
   int repeticoes;
-  Exercicio exercicio;
+  ExercicioModel exercicio;
 
   ItemTreino({
     required this.exercicio,

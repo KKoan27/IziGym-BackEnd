@@ -5,19 +5,47 @@ class ExercicioDAO {
   Db db;
   ExercicioDAO(this.db);
 
-  Future<WriteResult> exercicioInsert(Exercicio exercicio) async {
+  Future<WriteResult> exercicioInsert(ExercicioModel exercicio) async {
     return await db.collection('Exercicios').insertOne(exercicio.toJson());
   }
 
-  Future<List<Map<String, dynamic>>> exercicioFindAll() async {
-    return await db.collection('Exercicios').find().toList();
-  }
+  Future<List<ExercicioModel>> exercicioFindAll() async {
+try{
 
-  Future<List<Map<String, dynamic>>> exercicioFindByName(String search) async {
-    return await db.collection('Exercicios').find({
+  Stream<Map<String,dynamic>> mapexercicios =  await db.collection('Exercicios').find();
+  
+    return 
+     mapexercicios.forEach((item) {
+       ExercicioModel(
+      descricao: item['descricao'],
+      execucao: item['execucao'],
+      musculosAlvo: item['musculosAlvo'],
+      nome: item['nome'],
+       dicas: item['dicas']);}) as List<ExercicioModel>; 
+      
+    }   on MongoDartError catch (e){
+      throw ("Erro no Mongo : $e");
+  }
+    }
+
+  Future<List<ExercicioModel>> exercicioFindByName(String search) async {
+
+    try {
+         Stream<Map<String,dynamic>> mapexercicios =  await db.collection('Exercicios').find({
       "nome": {"\$regex": search, "\$options": "i"},
-    }).toList();
-  }
 
-  // Future methods for updating, deleting, etc. can be added here
-}
+    });
+return 
+      mapexercicios.forEach((item) {
+       ExercicioModel(
+      descricao: item['descricao'],
+      execucao: item['execucao'],
+      musculosAlvo: item['musculosAlvo'],
+      nome: item['nome'],
+       dicas: item['dicas']);}) as List<ExercicioModel>; 
+    }  on MongoDartError catch (e){
+      throw ("Erro no Mongo : $e");
+  }
+    }
+  
+  }
