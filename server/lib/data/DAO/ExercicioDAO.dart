@@ -10,42 +10,48 @@ class ExercicioDAO {
   }
 
   Future<List<ExercicioModel>> exercicioFindAll() async {
-try{
+    try {
+      List<Map<String, dynamic>> mapexercicios = await db
+          .collection('Exercicios')
+          .find()
+          .toList();
 
-  Stream<Map<String,dynamic>> mapexercicios =  await db.collection('Exercicios').find();
-  
-    return 
-     mapexercicios.forEach((item) {
-       ExercicioModel(
-      descricao: item['descricao'],
-      execucao: item['execucao'],
-      musculosAlvo: item['musculosAlvo'],
-      nome: item['nome'],
-       dicas: item['dicas']);}) as List<ExercicioModel>; 
-      
-    }   on MongoDartError catch (e){
+      return mapexercicios.map((event) {
+        return ExercicioModel(
+          descricao: event['descricao'],
+          nome: event['nome'],
+          execucao: event['execucao'],
+          musculosAlvo: List<String>.from(event['musculosAlvo'] ?? []),
+          dicas: event['dicas'] != null
+              ? List<String>.from(event['dicas'])
+              : null,
+        );
+      }).toList();
+    } on MongoDartError catch (e) {
       throw ("Erro no Mongo : $e");
-  }
     }
+  }
 
   Future<List<ExercicioModel>> exercicioFindByName(String search) async {
-
     try {
-         Stream<Map<String,dynamic>> mapexercicios =  await db.collection('Exercicios').find({
-      "nome": {"\$regex": search, "\$options": "i"},
-
-    });
-return 
-      mapexercicios.forEach((item) {
-       ExercicioModel(
-      descricao: item['descricao'],
-      execucao: item['execucao'],
-      musculosAlvo: item['musculosAlvo'],
-      nome: item['nome'],
-       dicas: item['dicas']);}) as List<ExercicioModel>; 
-    }  on MongoDartError catch (e){
+      Stream<Map<String, dynamic>> mapexercicios = await db
+          .collection('Exercicios')
+          .find({
+            "nome": {"\$regex": search, "\$options": "i"},
+          });
+      return mapexercicios.map((event) {
+        return ExercicioModel(
+          descricao: event['descricao'],
+          nome: event['nome'],
+          execucao: event['execucao'],
+          musculosAlvo: List<String>.from(event['musculosAlvo'] ?? []),
+          dicas: event['dicas'] != null
+              ? List<String>.from(event['dicas'])
+              : null,
+        );
+      }).toList();
+    } on MongoDartError catch (e) {
       throw ("Erro no Mongo : $e");
-  }
     }
-  
   }
+}

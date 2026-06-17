@@ -31,7 +31,6 @@ class Endpoint {
     rout.post("/user/register", userctrl.Register);
     rout.post("/user/auth", userctrl.Auth);
 
-   
     rout.post("/treino", (Request request) async {
       Db db = await MongoConn.database;
 
@@ -351,27 +350,7 @@ class Endpoint {
     });
     //Endpoint retornando todos os exercicios ou filtrando com base em um search de pesquisa
 
-    rout.get("/getexercicios", (Request request) async {
-      Db db = await MongoConn.database;
-      DbCollection collection = db.collection("Exercicios");
-
-      try {
-        String? search = request.url.queryParameters['q'];
-        List<Map<String, dynamic>> exList;
-
-      
-
-        return Response.ok(
-          jsonEncode(exList),
-          headers: {'Content-Type': 'application/json'},
-        );
-      } on MongoDartError catch (e) {
-        return Response.badRequest(
-          body: "A busca deu errado \n INFO : $e",
-          headers: {'Content-Type': 'application/json'},
-        );
-      }
-    });
+    rout.get("/getexercicios", exercicioctrl.listexercicios);
 
     rout.get('/treino', (Request request) async {
       Db db = await MongoConn.database;
