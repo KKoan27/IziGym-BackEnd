@@ -1,5 +1,7 @@
 import 'dart:convert';
-import 'package:server/Models/TreinosModel.dart';
+import 'dart:core';
+import 'package:server/Models/ExercicioModel.dart';
+import 'package:server/Models/TreinoModel.dart';
 import 'package:server/Utilitys/ReturnJson.dart';
 import 'package:server/data/DAO/TreinoDAO.dart';
 import 'package:shelf/shelf.dart';
@@ -13,22 +15,42 @@ class TreinoService {
    TreinoService(this.treinodao); 
 
 
-  Future<List<TreinosModel>> listTreinos(String userid) async {
+
+
+Future <List<ExercicioModel>> verifyExercicios(Set<String> listaNomesExercicios){
+
+          List<ExercicioModel> listExercicios =  treinodao.recoveryExercicios(listaNomesExercicios);
+
+  if(listExercicios =! null){
+
+      return listExercicios;
+  }
+  else{
+
+    throw ExercicioNotFoundException(); 
+  } 
+}
+
+  Future<List<TreinoModel>> listTreinos(String userid) async {
 
    //Verificando se o usuario existe no BD
     UserModel user = await treinodao.userFind(userid);
 
     return await treinodao.treinosFindByUserId(user.id!);
-
+    
     
 
 
   }
 
 
+
   
-  Future<TreinosModel> insertTreino(Request request)async{
+  Future<TreinoModel> insertTreino(Request request)async{
+
+    
     throw "testando";
+
       
   }
 

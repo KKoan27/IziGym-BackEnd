@@ -3,12 +3,12 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'ExercicioModel.dart';
 import 'UserModel.dart';
 
-class TreinosModel {
+class TreinoModel {
   String _nome;
   ObjectId _userId;
   List<ItemTreino> itemTreino;
 
-  TreinosModel({
+  TreinoModel({
     required String nome,
     required ObjectId userId,
     required this.itemTreino,

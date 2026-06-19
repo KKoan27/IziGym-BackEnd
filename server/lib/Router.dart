@@ -12,7 +12,7 @@ import 'package:mongo_dart/mongo_dart.dart';
 import 'package:server/data/Mongo_Conn.dart';
 import 'Models/ExercicioModel.dart';
 import 'Models/UserModel.dart';
-import 'Models/TreinosModel.dart';
+import 'Models/TreinoModel.dart';
 
 class Endpoint {
   final Exerciciocontroller exercicioctrl;
@@ -63,7 +63,7 @@ class Endpoint {
     //   }
 
     //   // Agora, lemos a LISTA de OBJETOS do body.
-    //   final exerciciosRequestDoBody = body['exercicios'] as List<dynamic>;
+      // final exerciciosRequestDoBody = body['exercicios'] as List<dynamic>;
 
     //   // essa lista fica algo
     //   // List[
@@ -81,12 +81,12 @@ class Endpoint {
     //   // ETAPA 2: VALIDAR SE OS EXERCÍCIOS EXISTEM NO BANCO DE DADOS
     //   // =======================================================================
 
-    //   // Extrai apenas os NOMES da lista de objetos para usar na busca com $in
+      // Extrai apenas os NOMES da lista de objetos para usar na busca com $in
     //   final nomesDosExercicios = exerciciosRequestDoBody
     //       .map((ex) => ex['nome'] as String)
     //       .toList();
 
-    //   // Busca no DB APENAS os exercícios que o usuário pediu
+    // // Busca no DB APENAS os exercícios que o usuário pediu
     //   var exerciciosDB = await db.collection("Exercicios").find({
     //     'nome': {'\$in': nomesDosExercicios},
     //   }).toList();
@@ -324,7 +324,7 @@ class Endpoint {
                 );
               }
             }
-            TreinosModel treino = new TreinosModel(
+            TreinoModel treino = new TreinoModel(
               nome: body['nomeTreino'],
               userId: buscaTreino['userId'],
               itemTreino: itensTreino,

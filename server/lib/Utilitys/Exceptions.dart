@@ -3,13 +3,19 @@ class UserAlreadyExistsException implements Exception {
   UserAlreadyExistsException([this.message = 'Usuário já cadastrado no sistema']);
 }
 
+
+class ExercicioNotFoundException implements Exception{
+  final String message;
+    ExercicioNotFoundException([this.message  = 'Exercicio não encontrado'])
+}
+
 class UserNotFoundException implements Exception {
   final String message;
   UserNotFoundException([this.message = 'Usuário não encontrado no sistema']);
 }
 class TreinoNotFoundException implements Exception {
-  final String message;
-  TreinoNotFoundException([this.message = 'Treino não encontrado no sistema']);
+  final String? message;
+  TreinoNotFoundException({this.message = 'Treino não encontrado no sistema'});
 }
 
 class InvalidPasswordException implements Exception{ 

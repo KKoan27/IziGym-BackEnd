@@ -1,6 +1,7 @@
-import 'dart:convert';
+  import 'dart:convert';
 
-import 'package:server/Models/TreinosModel.dart';
+import 'package:server/Models/ExercicioModel.dart';
+import 'package:server/Models/TreinoModel.dart';
 import 'package:server/Services/TreinoService.dart';
 import 'package:shelf/shelf.dart';
 import 'package:server/Utilitys/Exceptions.dart';
@@ -22,7 +23,7 @@ try{
     String? userid = request.url.queryParameters['userid'];
 
   if(userid == null) throw MissingParametersException();
-     List<TreinosModel> listatreinoresponse  =   await treinoservice.listTreinos(userid);
+     List<TreinoModel> listatreinoresponse  =   await treinoservice.listTreinos(userid);
 
     return Response.ok(jsonEncode(listatreinoresponse));
 
@@ -52,25 +53,39 @@ catch (e){
       
     
       final exerciciosRequestDoBody = bodyrequest['exercicios'] as List<dynamic>;
-
-      for( var i in exerciciosRequestDoBody){
-
-        print(" nome: ${i['nome']} \n ");
+List<ExercicioModel> listexercicios = [];
 
 
-      }
+  List<String> listaNomesExercicios = exerciciosRequestDoBody.map((e) => e['nome'] as String).toList();
+
+
+  
+
+//       for( var i in exerciciosRequestDoBody){
+
+
+//         final exercicios = i['exercicios'] as List<Map<String,dynamic>>;
+        
+//         for(Map<String,dynamic> j in exercicios){
+//  listexercicios.add(    ExercicioModel(
+//                     nome: j['nome'],
+//                     musculosAlvo: List<String>.from(j['musculoAlvo'] ??[]) , 
+//                     descricao: j['descricao'], 
+//                     execucao: j['execucao']));
+//         }
+          
+
+
+//       }
+
+      print(listexercicios);
+
+      
       throw Exception("testando");
 
        
        
-      //  List<Map<String,dynamic>> mapExerciciosByName =  exerciciosRequestDoBody.map(
-      //   (i) => {
-      //     i['nome'] as String : i
-      //     }).toList();
-
-
-          
-
+     
           
 
     
@@ -84,11 +99,10 @@ catch (e){
 
     // )      
       
-      treinoservice.insertTreino(request);
 
     } 
-    catch (e){  
-
+    catch (e,s){  
+        print(s);
       return Response.badRequest(body: jsonEncode({'erro' : e.toString()}) );
 
     }
