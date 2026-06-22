@@ -1,5 +1,6 @@
   import 'dart:convert';
 
+import 'package:mongo_dart/mongo_dart.dart';
 import 'package:server/Models/ExercicioModel.dart';
 import 'package:server/Models/TreinoModel.dart';
 import 'package:server/Services/TreinoService.dart';
@@ -46,61 +47,50 @@ catch (e){
     try{
       Map<String,dynamic>? bodyrequest =  await returnjson(request);
 
-   if (bodyrequest == null ||
+      if (bodyrequest == null ||
           bodyrequest['userId'] == null ||
           bodyrequest['nomeTreino'] == null ||
           bodyrequest['exercicios'] == null)  throw MissingParametersException();
       
     
       final exerciciosRequestDoBody = bodyrequest['exercicios'] as List<dynamic>;
-List<ExercicioModel> listexercicios = [];
-
-
-  List<String> listaNomesExercicios = exerciciosRequestDoBody.map((e) => e['nome'] as String).toList();
-
-
-  
-
-//       for( var i in exerciciosRequestDoBody){
-
-
-//         final exercicios = i['exercicios'] as List<Map<String,dynamic>>;
-        
-//         for(Map<String,dynamic> j in exercicios){
-//  listexercicios.add(    ExercicioModel(
-//                     nome: j['nome'],
-//                     musculosAlvo: List<String>.from(j['musculoAlvo'] ??[]) , 
-//                     descricao: j['descricao'], 
-//                     execucao: j['execucao']));
-//         }
-          
-
-
-//       }
-
-      print(listexercicios);
-
+      List<String> setNomeExercicios = exerciciosRequestDoBody.map((e) => e['nome'] as String).toList();
       
-      throw Exception("testando");
+      Set<ExercicioModel> setExercicios =   await treinoservice.verifyExercicios(setNomeExercicios);
 
-       
-       
-     
+
+      Map<String, ExercicioModel> dicExercicios   = {
+      for (var ex in setExercicios) ex.nome : ex
+      };
+
+      List<ItemTreino>  itemsTreino  = exerciciosRequestDoBody.map((E) 
+      {
+          return ItemTreino(exercicio: dicExercicios[E['nome']]!, intervalo: E['intervalo'], repeticoes: E['repeticoes']);
+      }).toList();
+
+
+      TreinoModel treino = TreinoModel(
+        itemTreino: itemsTreino, 
+        nome: bodyrequest['nomeTreino'],
+        userId:  ObjectId.parse(bodyrequest['userId'])
+        ); 
+
+        Map<String, dynamic> response  = { 'message' : 'Treino inserido com sucesso', 'id' : (await treinoservice.insertTreino(treino))};
+
+        
+        return Response.ok(  jsonEncode(response));  
+
+
+
+           
           
 
-    
-    // TreinosModel  treinoRequest = TreinosModel( 
-    //      nome: bodyrequest['nomeTreino'],
-    //    userId: bodyrequest['userId'],
-    //    itemTreino:  
-    //    bodyrequest['exercicios']
-       
-    //    ItemTreino(exercicio: exercicio, repeticoes: repeticoes, intervalo: intervalo)
-
-    // )      
       
 
     } 
+    on ExercicioNotFoundException catch (e) {
+      return Response.notFound(jsonEncode({'erro' : e.message, 'exercicios' : e.listExercicios}));}
+
     catch (e,s){  
         print(s);
       return Response.badRequest(body: jsonEncode({'erro' : e.toString()}) );

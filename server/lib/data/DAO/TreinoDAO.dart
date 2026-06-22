@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mongo_dart/mongo_dart.dart';
 import 'package:server/Models/ExercicioModel.dart';
 import 'package:server/Models/TreinoModel.dart';
@@ -18,11 +20,13 @@ class TreinoDAO {
 
   }
     
-  Future<WriteResult?> treinoInsert(TreinoModel treino) async {
+  Future<String> treinoInsert(TreinoModel treino) async {
+   WriteResult result = await db.collection('Treinos').insertOne(treino.toJson());
 
+   if(result.hasWriteErrors) throw DataBaseException("Db Error : ${result.writeError!.errmsg}"); 
 
-      
-    
+   return  result.id.oid ;
+
   }
 
   Future<WriteResult> treinoUpdate(ObjectId id, TreinoModel treino) async {
@@ -34,16 +38,37 @@ class TreinoDAO {
 
 
 
-  Future<List<ExercicioModel>> recoveryExercicios (Set<String> listaNomesExercicios) async {
+  Future<Set<ExercicioModel>>  recoveryExercicios (List<String> setNomeExerciciosReq) async {
+        
+         List<Map<String,dynamic>> exerciciosDB = await db.collection('Exercicios').find({'nome' :{'\$in' : setNomeExerciciosReq} }).toList();
+        
 
-  
 
-         List<Map<String,dynamic>> exerciciosDB = await db.collection('Exercicios').find({'nome' :{'\$in' : listaNomesExercicios} }).toList();
-  
-        if(exerciciosDB.length != listaNomesExercicios.length){
-          
-          
-        }
+
+    if(exerciciosDB.length != setNomeExerciciosReq.length){
+
+ Set<String> setNomesExerciciosDB = exerciciosDB.map((e) => e['nome'] as String).toSet();
+
+       throw ExercicioNotFoundException( setNomeExerciciosReq.where((e) { 
+         return !setNomesExerciciosDB.contains(e);
+         }).toList()); }
+         else{
+  return  exerciciosDB.map((e) { 
+          if(e != null)  {
+       return  ExercicioModel
+       (nome: e['nome'],
+        musculosAlvo: List<String>.from(e['musculosAlvo']),
+        descricao: e['descricao'],
+        execucao: e['execucao'],
+        dicas:e['dicas'] == null ? null : List<String>.from(e['dicas']));}
+        }).toSet();
+
+
+         }
+
+       
+
+
   } 
 
 

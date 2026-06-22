@@ -6,7 +6,8 @@ class UserAlreadyExistsException implements Exception {
 
 class ExercicioNotFoundException implements Exception{
   final String message;
-    ExercicioNotFoundException([this.message  = 'Exercicio não encontrado'])
+  final List<String>? listExercicios;
+    ExercicioNotFoundException([this.listExercicios,this.message  = 'Exercicio não encontrado' ,  ]);
 }
 
 class UserNotFoundException implements Exception {
@@ -26,4 +27,10 @@ class InvalidPasswordException implements Exception{
 class MissingParametersException implements Exception{
     final String message;
 MissingParametersException([this.message = 'Parâmetros faltando']);
+}
+
+class DataBaseException implements Exception{
+  final String? message;
+  DataBaseException([this.message]);
+
 }
