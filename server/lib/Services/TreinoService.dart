@@ -41,10 +41,12 @@ class TreinoService {
       
   }
 
-  // Future<Response> deleteTreino(Request request)async{
-  
-  
-  // }
+  Future<String> deleteTreino(String treinoid)async{
+
+//PENDENTE VALIDAÇÃO  se o treino é realmente do usuario que solicitou
+    return await treinodao.treinoDelete(treinoid);
+
+  }
 
 
   // Future<Response> updateTreino(Request request)async{

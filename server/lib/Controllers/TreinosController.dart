@@ -78,13 +78,7 @@ catch (e){
         Map<String, dynamic> response  = { 'message' : 'Treino inserido com sucesso', 'id' : (await treinoservice.insertTreino(treino))};
 
         
-        return Response.ok(  jsonEncode(response));  
-
-
-
-           
-          
-
+        return Response(201,body: jsonEncode(response));  
       
 
     } 
@@ -98,16 +92,34 @@ catch (e){
     }
   }
 
-//   Future<Response> deleteTreino(Request request)async{
+  Future<Response> deleteTreino(Request request)async{
   
-//   try{
+  try{
+      String? treinoid = request.url.queryParameters['treinoId'] ;
+    
+    if(treinoid  == null)throw MissingParametersException("treinoId não foi inserido na URL");
 
-// }
-// catch (e){
-  
-// }
+   Map<String,dynamic> response = { 'message'  : "Deleção executada com sucesso",'id' : await treinoservice.deleteTreino(treinoid)};
 
-//   }
+  return  Response.ok(jsonEncode(response));
+
+}
+
+on TreinoNotFoundException catch(e){
+    return Response.notFound(jsonEncode({"message" : e.message}));
+
+}
+
+on MissingParametersException catch(e){
+
+  return Response.badRequest(body: jsonEncode({ 'erro': e}));
+
+}
+
+catch (e){
+  return Response.badRequest(body:  jsonEncode({ 'erro': e}));
+}
+}
 
 
 //   Future<Response> updateTreino(Request request)async{

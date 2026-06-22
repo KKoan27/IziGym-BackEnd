@@ -357,42 +357,7 @@ class Endpoint {
 
   rout.get('/treino/list', treinoctrl.listTreinos);
 
-    rout.delete("/treino", (Request request) async {
-      Db db = await MongoConn.database;
-
-      try {
-        String? treinoId = request.url.queryParameters['treinoId'];
-
-        if (treinoId == null || treinoId.isEmpty) {
-          throw Exception(
-            "Parametro treinoId está nulo ou vazio $treinoId   \n",
-          );
-        } else {
-          // Transformando o String de treinoId em Object ID para que o BD entenda e consiga fazer a exclusão
-          ObjectId treinoObject = ObjectId.fromHexString(treinoId);
-          final result = await db.collection('Treinos').deleteOne({
-            '_id': treinoObject,
-          });
-
-          // Aquii ele verifica se deu algum tipo de erro, se não, testa pela quantidade de documentos removidos, se foi 1 (correto) ou 0(não encontrado)
-          if (result.hasWriteErrors) {
-            return Response.badRequest(body: "Deleção não executada");
-          } else {
-            if (result.nRemoved == 1) {
-              return Response.ok("Treino Deletado com sucesso");
-            } else {
-              return Response.notFound(
-                {'message': 'Treino com o ID fornecido não foi encontrado.'},
-                headers: {'Content-Type': 'application/json'},
-              );
-            }
-          }
-        }
-      } on Exception catch (e, s) {
-        print("Erro na execução : $e \n  $s");
-        return Response.badRequest(body: "Erro na execução : $e");
-      }
-    });
+    rout.delete("/treino", treinoctrl.deleteTreino);
 
     return rout;
   }

@@ -105,8 +105,17 @@ class TreinoDAO {
 
   }
 
-  Future<WriteResult> treinoDelete(ObjectId id) async {
-    return await db.collection('Treinos').deleteOne({'_id': id});
+
+
+
+
+  Future<String> treinoDelete(String id) async {
+
+      ObjectId objectid = ObjectId.parse(id); 
+      if((await db.collection('Treinos').findOne({'_id' : objectid}) == null)) throw TreinoNotFoundException();
+        WriteResult  result = await db.collection('Treinos').deleteOne({'_id' : objectid}) ;
+    if(result.hasWriteErrors) throw DataBaseException(result.writeError!.errmsg);
+      return "Treino Deletado";
   }
 
   // Future methods for other operations can be added here
