@@ -1,14 +1,51 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:mongo_dart/mongo_dart.dart';
+import 'package:server/Controllers/ExercicioController.dart';
+import 'package:server/Controllers/TreinosController.dart';
+import 'package:server/Services/TreinoService.dart';
+import 'package:server/Services/UserService.dart';
+import 'package:server/data/DAO/ExercicioDAO.dart';
+import 'package:server/data/DAO/TreinoDAO.dart';
+import 'package:server/data/DAO/UserDAO.dart';
+import 'package:server/data/Mongo_Conn.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart' as shelfio;
-import 'Routes.dart';
-import '../lib/Utilitys/custom_env.dart';
+import 'package:server/Router.dart';
+import 'package:server/Utilitys/custom_env.dart';
 import 'package:shelf_cors_headers/shelf_cors_headers.dart' as cors;
+import 'package:server/Controllers/UserController.dart';
+import 'package:server/Controllers/ExercicioController.dart';
+import 'package:server/Services/ExercicioService.dart';
+import 'package:server/data/DAO/ExercicioDAO.dart';
 
 void main() async {
-  Endpoint rout = Endpoint();
-// TESTANDO DNV
+  Db db = await MongoConn.database;
+  //DAO's
+  TreinoDAO treinodao  = TreinoDAO(db);
+  ExercicioDAO exerciciodao = ExercicioDAO(db);
+  UserDAO userdao = UserDAO(db);
+
+
+  //Services
+  UserService userservice = UserService(userdao);
+  ExercicioService exercicioservice = ExercicioService(exerciciodao);
+
+  TreinoService treinoservice = TreinoService(treinodao);
+
+
+
+  //Controllers
+  Treinoscontroller treinoscontroller = Treinoscontroller(treinoservice);
+  Exerciciocontroller exerciciocontroller = Exerciciocontroller(exercicioservice);
+  UserController userController = UserController(userservice);
+
+  Endpoint rout = Endpoint(
+    exercicioctrl: exerciciocontroller,
+    userctrl: userController,
+    treinoctrl: treinoscontroller,
+  );
+
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
@@ -36,6 +73,8 @@ void main() async {
 
   print("🚀 Servidor iniciado em http://${server.address.host}:${server.port}");
 }
+
+// Organizar essas Middleware
 
 // Nome da função do nosso middleware
 Middleware standardResponseMiddleware(Map<String, String> corsHeaders) {
@@ -78,7 +117,9 @@ Middleware standardResponseMiddleware(Map<String, String> corsHeaders) {
             'Content-Type': 'application/json',
           },
         );
-      } catch (e) {
+      } catch (e, s) {
+
+        print('erro: $e \n\n $s');
         final errorPayload = {
           'methodRequest': request.method,
           'statusCode': 500,

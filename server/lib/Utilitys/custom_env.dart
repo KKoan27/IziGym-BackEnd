@@ -18,7 +18,6 @@ class Customenv {
     List<String> linhas = (await _readfile()).split('\n');
 
     var linhasValidas = linhas.where((l) => l.isNotEmpty && l.contains('='));
-    _map = {for (var l in linhasValidas) l.split('=')[0]: l.split('=')[1]};
     _map = {
       for (var l in linhasValidas)
         l.split('=')[0].trim(): l

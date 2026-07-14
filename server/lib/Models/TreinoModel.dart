@@ -1,14 +1,14 @@
 import 'package:mongo_dart/mongo_dart.dart';
 
-import 'Exercicio.dart';
-import 'Usuario.dart';
+import 'ExercicioModel.dart';
+import 'UserModel.dart';
 
-class Treinos {
+class TreinoModel {
   String _nome;
   ObjectId _userId;
   List<ItemTreino> itemTreino;
 
-  Treinos({
+  TreinoModel({
     required String nome,
     required ObjectId userId,
     required this.itemTreino,
@@ -32,7 +32,7 @@ class Treinos {
 class ItemTreino {
   int intervalo;
   int repeticoes;
-  Exercicio exercicio;
+  ExercicioModel exercicio;
 
   ItemTreino({
     required this.exercicio,

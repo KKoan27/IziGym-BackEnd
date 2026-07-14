@@ -1,18 +1,18 @@
 import 'dart:io';
 
-class Exercicio {
+class ExercicioModel {
   String _nome;
   final List<String> _musculosAlvo;
   final String _descricao;
   String _execucao;
-  String? _dicas;
+  List<String?>? _dicas;
 
-  Exercicio({
+  ExercicioModel({
     required String nome,
     required List<String> musculosAlvo,
     required String descricao,
     required String execucao,
-    String? dicas,
+    List<String?>? dicas,
   }) : _nome = nome,
        _musculosAlvo = musculosAlvo,
        _descricao = descricao,
@@ -24,15 +24,15 @@ class Exercicio {
   List<String> get musculosAlvo => _musculosAlvo;
   String get descricao => _descricao;
   String get execucao => _execucao;
-  String? get dicas => _dicas;
+  List<String?>? get dicas => _dicas;
 
   // Setters
   set nome(String name) {
     _nome = name;
   }
 
-  set dicas(String? dica) {
-    _dicas = dica;
+  set dicas(String dica) {
+    _dicas!.add(dica);
   }
 
   // toJson
