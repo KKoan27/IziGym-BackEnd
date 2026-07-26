@@ -1,13 +1,56 @@
 import 'dart:convert';
-
+import 'package:server/Utilitys/Exceptions.dart';
 import 'package:shelf/shelf.dart';
-
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:server/Utilitys/custom_env.dart';
 
 const Map<String,String> corsHeaders = {  
                                 'Access-Control-Allow-Origin': '*',
                                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
                                 'Access-Control-Allow-Headers': 'Origin, Content-Type'};
 
+
+Middleware verifyJWT (){
+
+  return (Handler innerHandler){
+
+    return (Request request) async{
+
+try{
+
+    String  secret  =  await Customenv.get<String>(key: 'JWTsecret');
+
+    String? authorization = request.headers['Authorization'];
+
+if (authorization == null || !authorization.startsWith('Bearer ')) {
+         throw MissingParametersException( 'Jwt ausente ou mal formatado');
+        }
+
+    String token = authorization.split(' ')[1];
+
+  JWT validacao = JWT.verify(token, SecretKey(secret));
+
+
+
+   final requestComToken = request.change(context: {'jwt_payload' : validacao.payload});
+
+
+ return innerHandler(requestComToken);
+}
+ on JWTInvalidException catch  (e){
+
+  return Response.unauthorized(jsonEncode({'Erro' : "JWT Invalido", ' body' : e.message }));
+
+}
+on JWTExpiredException catch (e){
+
+  return Response.unauthorized(jsonEncode({'Erro' : "JWT Expirou", ' body' : e.message }));
+}
+
+  };
+  };
+
+}
 
     Middleware standardRespondeMiddleware (){
 
@@ -17,7 +60,6 @@ const Map<String,String> corsHeaders = {
                      if(request.method == 'OPTIONS'){
 
                             return Response.ok('', headers: corsHeaders);
-
                      }
 
                      return null;
