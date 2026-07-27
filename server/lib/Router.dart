@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:server/Controllers/UserController.dart';
 import 'package:server/Controllers/TreinosController.dart';
 import 'package:server/Controllers/ExercicioController.dart';
+import 'package:server/Utilitys/Middlewares.dart';
 import 'package:server/data/DAO/ExercicioDAO.dart';
 import 'package:server/data/DAO/UserDAO.dart';
 import 'package:server/data/DAO/TreinoDAO.dart';
@@ -13,6 +14,7 @@ import 'package:server/data/Mongo_Conn.dart';
 import 'Models/ExercicioModel.dart';
 import 'Models/UserModel.dart';
 import 'Models/TreinoModel.dart';
+import 'package:server/Utilitys/ReturnJson.dart';
 
 class Endpoint {
   final Exerciciocontroller exercicioctrl;
@@ -25,18 +27,23 @@ class Endpoint {
   });
 
   Handler get handler {
-    final rout = Router();
-    var resposta;
+    Router roteadorPrincipal = Router();
 
-    rout.post("/user/register", userctrl.Register);
-    rout.post("/user/auth", userctrl.Auth);
+    roteadorPrincipal.post("/user/register", userctrl.Register);
+    roteadorPrincipal.post("/user/auth", userctrl.Auth);
 
-    rout.post("/treino", treinoctrl.insertTreino);
-    
+    Router roteadorPrivado = Router();
 
-    rout.put("/user", (Request request) async {
+    roteadorPrivado.post("/treino", treinoctrl.insertTreino);
+
+    roteadorPrivado.get("/getexercicios", exercicioctrl.listexercicios);
+
+    roteadorPrivado.get('/treino', treinoctrl.listTreinos);
+
+    roteadorPrivado.put("/user", (Request request) async {
       Db db = await MongoConn.database;
       UserModel user;
+
       try {
         var jsonBody = await returnjson(request);
 
@@ -82,7 +89,7 @@ class Endpoint {
       }
     });
 
-    rout.put("/treino", (Request request) async {
+    roteadorPrivado.put("/treino", (Request request) async {
       // Variaveis necessarias
       Db db = await MongoConn.database;
       String? query = request.url.queryParameters['TreinoId'];
@@ -189,23 +196,17 @@ class Endpoint {
         return Response.badRequest(body: "$e");
       }
     });
+
+    roteadorPrivado.delete("/treino", treinoctrl.deleteTreino);
+
+    Handler pipePrivat = Pipeline()
+        .addMiddleware(verifyJWT())
+        .addHandler(roteadorPrivado.call);
+
+    roteadorPrincipal.mount('/api', pipePrivat);
+
     //Endpoint retornando todos os exercicios ou filtrando com base em um search de pesquisa
 
-    rout.get("/getexercicios", exercicioctrl.listexercicios);
-
-
-  rout.get('/treino/list', treinoctrl.listTreinos);
-
-    rout.delete("/treino", treinoctrl.deleteTreino);
-
-    return rout;
-  }
-
-  // Função para fazer a conversão do body em um dicionario!!
-  Future<Map<String, dynamic>?>? returnjson(Request request) async {
-    //lendo todo o body do JSON em string no momento
-    final body = await request.readAsString();
-    //Aqui todo a strign jSon é convertida para um Map(String key :  dynamic valor )
-    return jsonDecode(body) as Map<String, dynamic>;
+    return roteadorPrincipal.call;
   }
 }
