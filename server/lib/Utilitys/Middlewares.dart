@@ -84,7 +84,7 @@ on JWTExpiredException catch (e){
                 headers: { ...corsHeaders,...originalresponse.headers, 'Content-Type' : 'application/json'},
                 body: jsonEncode({
             'statusCode': originalresponse.statusCode,
-            'response': responseBody, 
+            'body': responseBody, 
             }));
             } 
             
@@ -96,7 +96,7 @@ on JWTExpiredException catch (e){
       },
             body: jsonEncode( {
             'statusCode': 500,
-            'response': {
+            'body': {
                 'error': 'Ocorreu um erro interno no servidor.',
                 'details': e.toString(),
                 'stack' : stack.toString()

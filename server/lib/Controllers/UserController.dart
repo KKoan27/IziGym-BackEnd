@@ -1,7 +1,10 @@
 // ignore: file_names
 import 'dart:convert';
+import 'dart:io';
+import 'package:server/Controllers/JWTController.dart';
 import 'package:server/Models/UserModel.dart';
 import 'package:server/Services/UserService.dart';
+import 'package:server/Utilitys/custom_env.dart';
 import 'package:shelf/shelf.dart';
 import 'package:server/Utilitys/ReturnJson.dart';
 import 'package:server/Utilitys/Exceptions.dart';
@@ -48,6 +51,9 @@ class UserController {
       Map<String, dynamic>? body = await returnjson(request);
 
       if (body == null) throw MissingParametersException();
+      final secret =
+          Platform.environment['JWTsecret'] ??
+          await Customenv.get<String>(key: 'JWTsecret');
 
       UserModel user = UserModel.auth(
         email: body['name'],
@@ -59,10 +65,19 @@ class UserController {
       if(userRequest.email == null || userRequest.senha == null) throw MissingParametersException();
 
       UserModel userResponse = await userservice.Auth(userRequest);
+      
+      
+      Map<String, dynamic> payload = {'id': userResponse.id, 'role': 'user'};
 
+      String token = JWTController.signer(payload, secret);
 
-      return Response.ok(jsonEncode({'message' : 'Autenticado com sucesso', 'response' : userResponse.toJson()}));
-
+return Response.ok(
+        jsonEncode({
+          'message': 'Autenticado com sucesso',
+          'token': token,
+          'response': userResponse.toJson(),
+        }),
+      );
     } on InvalidPasswordException catch(e){
        return Response.unauthorized( jsonEncode({'invalidPassoword' : e.message}) );
     } 
