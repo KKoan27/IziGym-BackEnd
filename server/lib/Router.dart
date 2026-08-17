@@ -4,7 +4,6 @@ import 'package:server/Controllers/UserController.dart';
 import 'package:server/Controllers/TreinosController.dart';
 import 'package:server/Controllers/ExercicioController.dart';
 import 'package:server/Utilitys/Middlewares.dart';
-import 'package:server/Utilitys/ReturnJson.dart';
 import 'package:server/data/DAO/ExercicioDAO.dart';
 import 'package:server/data/DAO/UserDAO.dart';
 import 'package:server/data/DAO/TreinoDAO.dart';
@@ -15,6 +14,7 @@ import 'package:server/data/Mongo_Conn.dart';
 import 'Models/ExercicioModel.dart';
 import 'Models/UserModel.dart';
 import 'Models/TreinoModel.dart';
+import 'package:server/Utilitys/ReturnJson.dart';
 
 class Endpoint {
   final Exerciciocontroller exercicioctrl;
@@ -27,7 +27,7 @@ class Endpoint {
   });
 
   Handler get handler {
-     Router roteadorPrincipal = Router();
+    Router roteadorPrincipal = Router();
 
     roteadorPrincipal.post("/user/register", userctrl.Register);
     roteadorPrincipal.post("/user/auth", userctrl.Auth);
@@ -208,5 +208,5 @@ class Endpoint {
     //Endpoint retornando todos os exercicios ou filtrando com base em um search de pesquisa
 
     return roteadorPrincipal.call;
-}
+  }
 }

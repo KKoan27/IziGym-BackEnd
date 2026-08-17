@@ -17,12 +17,11 @@ import 'package:server/Services/ExercicioService.dart';
 import 'package:server/Utilitys/Middlewares.dart';
 
 void main() async {
-
   //Conexão com o BD
   Db db = await MongoConn.database;
 
   //DAO's
-  TreinoDAO treinodao  = TreinoDAO(db);
+  TreinoDAO treinodao = TreinoDAO(db);
   ExercicioDAO exerciciodao = ExercicioDAO(db);
   UserDAO userdao = UserDAO(db);
 
@@ -33,7 +32,9 @@ void main() async {
 
   //Controllers
   Treinoscontroller treinoscontroller = Treinoscontroller(treinoservice);
-  Exerciciocontroller exerciciocontroller = Exerciciocontroller(exercicioservice);
+  Exerciciocontroller exerciciocontroller = Exerciciocontroller(
+    exercicioservice,
+  );
   UserController userController = UserController(userservice);
 
   Endpoint rout = Endpoint(

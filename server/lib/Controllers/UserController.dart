@@ -8,6 +8,7 @@ import 'package:server/Utilitys/custom_env.dart';
 import 'package:shelf/shelf.dart';
 import 'package:server/Utilitys/ReturnJson.dart';
 import 'package:server/Utilitys/Exceptions.dart';
+import 'package:server/Utilitys/custom_env.dart';
 
 class UserController {
   UserService userservice;
@@ -60,9 +61,13 @@ class UserController {
         senha: body['password'],
       );
 
-      UserModel userRequest = UserModel.auth(email: body['email'], senha: body['senha'] );
-      
-      if(userRequest.email == null || userRequest.senha == null) throw MissingParametersException();
+      UserModel userRequest = UserModel.auth(
+        email: body['email'],
+        senha: body['senha'],
+      );
+
+      if (userRequest.email == null || userRequest.senha == null)
+        throw MissingParametersException();
 
       UserModel userResponse = await userservice.Auth(userRequest);
       
@@ -84,8 +89,7 @@ return Response.ok(
     on Exception catch(e,s){
 
       print(s);
-      return Response.badRequest(body:  jsonEncode({'error' : e}));
-
+      return Response.badRequest(body: jsonEncode({'error': e}));
     }
   }
 }
