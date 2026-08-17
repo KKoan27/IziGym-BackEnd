@@ -1,12 +1,15 @@
+import 'dart:io';
+
 import 'package:mongo_dart/mongo_dart.dart';
+import 'package:server/Utilitys/custom_env.dart';
 
 class MongoConn {
   static Db? _db;
 
   static Future<Db> get database async {
     if (_db == null || !_db!.isConnected) {
-      _db = await Db.create(
-        "mongodb+srv://DELCO:Senhaforte2711@cluster0.z3vmnhg.mongodb.net/IZIGYM_DB",
+      _db = await Db.create( Platform.environment['MONGOURI'] ??
+            await Customenv.get<String>(key: 'MONGOURI'),
       );
 
       if (_db != null) {

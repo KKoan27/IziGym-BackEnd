@@ -21,14 +21,14 @@ class UserModel {
 
   UserModel.auth({required this.email, required this.senha});
 
-  UserModel.registerReponse({this.id, this.email, this.nome} );
+  UserModel.registerReponse({this.id, this.email, this.nome});
 
   // To pensando o que fazer com isso ainda
   UserModel.setting({this.email, this.altura, this.peso});
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id.toString(),
+      'id': id!.oid,
       'nome': nome,
       'email': email,
       'senha': senha,
