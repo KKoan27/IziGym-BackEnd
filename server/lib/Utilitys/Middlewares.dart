@@ -41,9 +41,7 @@ Middleware verifyJWT() {
           jsonEncode({'Erro': "JWT Expirou", ' body': e.message}),
         );
       } catch (e) {
-        return Response.internalServerError(
-          body: jsonEncode({'Erro': 'Falha interna na validação do token'}),
-        );
+        return Response.internalServerError(body: jsonEncode({'Erro': '{$e}'}));
       }
     };
   };

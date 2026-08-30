@@ -76,7 +76,9 @@ class UserController {
       );
     } on InvalidPasswordException catch (e) {
       return Response.unauthorized(jsonEncode({'invalidPassoword': e.message}));
-    } on Exception catch (e, s) {
+    } on UserNotFoundException catch (e) {
+      return Response.unauthorized(jsonEncode({'userNotFound': e.message}));
+    } catch (e, s) {
       print(s);
       return Response.badRequest(body: jsonEncode({'error': e}));
     }
