@@ -70,24 +70,23 @@ class UserController {
         throw MissingParametersException();
 
       UserModel userResponse = await userservice.Auth(userRequest);
-      
-      
+
       Map<String, dynamic> payload = {'id': userResponse.id, 'role': 'user'};
 
       String token = JWTController.signer(payload, secret);
 
-return Response.ok(
+      return Response.ok(
         jsonEncode({
           'message': 'Autenticado com sucesso',
           'token': token,
           'response': userResponse.toJson(),
         }),
       );
-    } on InvalidPasswordException catch(e){
-       return Response.unauthorized( jsonEncode({'invalidPassoword' : e.message}) );
-    } 
-    on Exception catch(e,s){
-
+    } on InvalidPasswordException catch (e) {
+      return Response.unauthorized(jsonEncode({'invalidPassoword': e.message}));
+    } on UserNotFoundException catch (e) {
+      return Response.unauthorized(jsonEncode({'userNotFound': e.message}));
+    } catch (e, s) {
       print(s);
       return Response.badRequest(body: jsonEncode({'error': e}));
     }
