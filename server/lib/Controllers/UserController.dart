@@ -1,9 +1,10 @@
 // ignore: file_names
 import 'dart:convert';
-import 'package:mongo_dart/mongo_dart.dart';
+import 'dart:io';
 import 'package:server/Controllers/JWTController.dart';
 import 'package:server/Models/UserModel.dart';
 import 'package:server/Services/UserService.dart';
+import 'package:server/Utilitys/custom_env.dart';
 import 'package:shelf/shelf.dart';
 import 'package:server/Utilitys/ReturnJson.dart';
 import 'package:server/Utilitys/Exceptions.dart';
@@ -51,7 +52,14 @@ class UserController {
       Map<String, dynamic>? body = await returnjson(request);
 
       if (body == null) throw MissingParametersException();
-      String key = await Customenv.get<String>(key: 'JWTsecret');
+      final secret =
+          Platform.environment['JWTsecret'] ??
+          await Customenv.get<String>(key: 'JWTsecret');
+
+      UserModel user = UserModel.auth(
+        email: body['name'],
+        senha: body['password'],
+      );
 
       UserModel userRequest = UserModel.auth(
         email: body['email'],
@@ -65,7 +73,7 @@ class UserController {
 
       Map<String, dynamic> payload = {'id': userResponse.id, 'role': 'user'};
 
-      String token = JWTController.signer(payload, key);
+      String token = JWTController.signer(payload, secret);
 
       return Response.ok(
         jsonEncode({

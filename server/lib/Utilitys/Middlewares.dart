@@ -54,44 +54,46 @@ Middleware standardRespondeMiddleware() {
         return Response.ok('', headers: corsHeaders);
       }
 
-      return null;
-    },
+                     return null;
+               }, 
+                
+                responseHandler: (originalresponse)async  {
+            String originalResponseString = await originalresponse.readAsString();
+            dynamic responseBody;
+                if(originalResponseString.isNotEmpty){
 
-    responseHandler: (originalresponse) async {
-      String originalResponseString = await originalresponse.readAsString();
-      dynamic responseBody;
-      if (originalResponseString.isNotEmpty) {
-        try {
-          responseBody = jsonDecode(originalResponseString);
-        } catch (_) {
-          responseBody = originalResponseString;
-        }
-      } else {
-        responseBody = {};
-      }
-
-      return originalresponse.change(
-        headers: {
-          ...corsHeaders,
-          ...originalresponse.headers,
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'statusCode': originalresponse.statusCode,
-          'response': responseBody,
-        }),
-      );
-    },
-    errorHandler: (e, stack) => Response.internalServerError(
-      headers: {...corsHeaders, 'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'statusCode': 500,
-        'response': {
-          'error': 'Ocorreu um erro interno no servidor.',
-          'details': e.toString(),
-          'stack': stack.toString(),
-        },
-      }),
-    ),
-  );
-}
+                    try{
+                        responseBody = jsonDecode(originalResponseString);
+                    }
+                    catch(_){
+                        responseBody = originalResponseString;
+                    }
+                }    else{
+                    responseBody = {};
+                }
+                
+            return originalresponse.change(
+                headers: { ...corsHeaders,...originalresponse.headers, 'Content-Type' : 'application/json'},
+                body: jsonEncode({
+            'statusCode': originalresponse.statusCode,
+            'body': responseBody, 
+            }));
+            } 
+            
+            
+        , errorHandler:(e , stack) =>  Response.internalServerError(
+           headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json' 
+      },
+            body: jsonEncode( {
+            'statusCode': 500,
+            'body': {
+                'error': 'Ocorreu um erro interno no servidor.',
+                'details': e.toString(),
+                'stack' : stack.toString()
+            },
+            })
+        )
+            );
+    }
