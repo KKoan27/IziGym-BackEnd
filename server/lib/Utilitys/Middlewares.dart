@@ -6,7 +6,7 @@ import 'package:server/Utilitys/custom_env.dart';
 const Map<String, String> corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Origin, Content-Type',
+  'Access-Control-Allow-Headers': 'Origin, Content-Type, Authorization',
 };
 
 Middleware verifyJWT() {
@@ -54,46 +54,44 @@ Middleware standardRespondeMiddleware() {
         return Response.ok('', headers: corsHeaders);
       }
 
-                     return null;
-               }, 
-                
-                responseHandler: (originalresponse)async  {
-            String originalResponseString = await originalresponse.readAsString();
-            dynamic responseBody;
-                if(originalResponseString.isNotEmpty){
+      return null;
+    },
 
-                    try{
-                        responseBody = jsonDecode(originalResponseString);
-                    }
-                    catch(_){
-                        responseBody = originalResponseString;
-                    }
-                }    else{
-                    responseBody = {};
-                }
-                
-            return originalresponse.change(
-                headers: { ...corsHeaders,...originalresponse.headers, 'Content-Type' : 'application/json'},
-                body: jsonEncode({
-            'statusCode': originalresponse.statusCode,
-            'body': responseBody, 
-            }));
-            } 
-            
-            
-        , errorHandler:(e , stack) =>  Response.internalServerError(
-           headers: { 
-        ...corsHeaders, 
-        'Content-Type': 'application/json' 
-      },
-            body: jsonEncode( {
-            'statusCode': 500,
-            'body': {
-                'error': 'Ocorreu um erro interno no servidor.',
-                'details': e.toString(),
-                'stack' : stack.toString()
-            },
-            })
-        )
-            );
-    }
+    responseHandler: (originalresponse) async {
+      String originalResponseString = await originalresponse.readAsString();
+      dynamic responseBody;
+      if (originalResponseString.isNotEmpty) {
+        try {
+          responseBody = jsonDecode(originalResponseString);
+        } catch (_) {
+          responseBody = originalResponseString;
+        }
+      } else {
+        responseBody = {};
+      }
+
+      return originalresponse.change(
+        headers: {
+          ...corsHeaders,
+          ...originalresponse.headers,
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'statusCode': originalresponse.statusCode,
+          'body': responseBody,
+        }),
+      );
+    },
+    errorHandler: (e, stack) => Response.internalServerError(
+      headers: {...corsHeaders, 'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'statusCode': 500,
+        'body': {
+          'error': 'Ocorreu um erro interno no servidor.',
+          'details': e.toString(),
+          'stack': stack.toString(),
+        },
+      }),
+    ),
+  );
+}
