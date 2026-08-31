@@ -31,7 +31,6 @@ class UserModel {
       'id': id!.oid,
       'nome': nome,
       'email': email,
-      'senha': senha,
       'peso': peso!.toDouble(),
       'altura': altura!.toDouble(),
     };
